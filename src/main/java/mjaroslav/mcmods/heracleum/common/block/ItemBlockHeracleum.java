@@ -4,8 +4,13 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
 
 public class ItemBlockHeracleum extends ItemBlock {
-    public ItemBlockHeracleum(Block p_i45328_1_) {
-        super(p_i45328_1_);
+    public ItemBlockHeracleum(Block block) {
+        super(block);
         setHasSubtypes(true);
+    }
+
+    @Override
+    public int getMetadata(int meta) {
+        return meta;
     }
 }

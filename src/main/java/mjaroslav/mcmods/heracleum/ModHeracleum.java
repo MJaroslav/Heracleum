@@ -10,9 +10,9 @@ import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import mjaroslav.mcmods.mjutils.lib.module.ConfigurationHandler;
-import mjaroslav.mcmods.mjutils.lib.module.ModuleHandler;
-import mjaroslav.mcmods.mjutils.lib.module.ProxyBase;
+import mjaroslav.mcmods.mjutils.module.AnnotationBasedConfiguration;
+import mjaroslav.mcmods.mjutils.module.ModuleSystem;
+import mjaroslav.mcmods.mjutils.module.Proxy;
 
 @Mod(modid = MODID, name = NAME, version = VERSION, guiFactory = GUIFACTORY)
 public class ModHeracleum {
@@ -20,30 +20,30 @@ public class ModHeracleum {
     public static ModHeracleum instance;
 
     @SidedProxy(clientSide = CLIENTPROXY, serverSide = COMMONPROXY)
-    public static ProxyBase proxy;
+    public static Proxy proxy;
 
-    public static ModuleHandler modules;
+    public static ModuleSystem initHandler;
 
-    public static ConfigurationHandler config = new ConfigurationHandler(MODID, LOG);
+    public static AnnotationBasedConfiguration config = new AnnotationBasedConfiguration(MODID, LOG);
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        modules.preInit(event);
+        initHandler.preInit(event);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        modules.init(event);
+        initHandler.init(event);
     }
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        modules.postInit(event);
+        initHandler.postInit(event);
     }
 
     @EventHandler
     public void constr(FMLConstructionEvent event) {
-        modules = new ModuleHandler(MODID, config, proxy);
-        modules.findModules(event);
+        initHandler = new ModuleSystem(MODID, config, proxy);
+        initHandler.initSystem(event);
     }
 }

@@ -9,12 +9,12 @@ import mjaroslav.mcmods.heracleum.common.block.BlockHeracleum;
 import mjaroslav.mcmods.heracleum.common.block.ItemBlockHeracleum;
 import mjaroslav.mcmods.heracleum.common.tileentity.TileEntityHeracleum;
 import mjaroslav.mcmods.heracleum.lib.ModInfo;
-import mjaroslav.mcmods.mjutils.lib.module.IModule;
-import mjaroslav.mcmods.mjutils.lib.module.ModModule;
+import mjaroslav.mcmods.mjutils.module.Modular;
+import mjaroslav.mcmods.mjutils.module.Module;
 import net.minecraft.block.Block;
 
-@ModModule(modid = ModInfo.MODID)
-public class ModuleBlocks implements IModule {
+@Module(ModInfo.MODID)
+public class ModuleBlocks implements Modular {
     public static int renderHeracleumID = RenderingRegistry.getNextAvailableRenderId();
 
     public static Block heracleum;
@@ -37,20 +37,5 @@ public class ModuleBlocks implements IModule {
     @Override
     public boolean canLoad() {
         return true;
-    }
-
-    @Override
-    public String getModuleName() {
-        return "Blocks";
-    }
-
-    @Override
-    public int getPriority() {
-        return 0;
-    }
-
-    @Override
-    public String[] modDependencies() {
-        return null;
     }
 }

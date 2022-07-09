@@ -1,75 +1,120 @@
 buildscript {
     repositories {
+        maven {
+            name 'jitpack'
+            url 'https://jitpack.io'
+        }
+        maven {
+            name = "github"
+            url = "https://github.com/juanmuscaria/maven/raw/master"
+        }
         mavenCentral()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:[1.2-1.4.6-SNAPSHOT,)'
     }
 }
 
 repositories {
     maven {
-            name "Mobius Repo"
-            url "http://mobiusstrip.eu/maven"
+        name 'ProfMobius Repo'
+        url 'http://mobiusstrip.eu/maven'
     }
     maven {
-        name 'CB Repo'
-        url "http://chickenbones.net/maven/"
+        name 'ChickenBones Repo'
+        url 'https://chickenbones.net/maven/'
     }
     maven {
-        name = "jitpack"
-        url "https://jitpack.io"
+        name 'jitpack'
+        url 'https://jitpack.io'
     }
+    mavenCentral()
 }
 
+apply plugin: 'idea'
+apply plugin: 'java'
 apply plugin: 'forge'
 
-version = "1.0.0"
-group= "mjaroslav.mcmods.heracleum"
-archivesBaseName = "heracleum"
+idea.module.inheritOutputDirs = true
+	
+def buildprop = new Properties()
+file("build.properties").withInputStream { buildprop.load(it) }
 
-compileJava.options.encoding = 'UTF-8'
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+version = buildprop.version
+group = buildprop.group
+archivesBaseName = project.name
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+task devJar(type: Jar) {
+    classifier('dev')
+    from sourceSets.main.output
+}
+
+task sourceJar(type: Jar, dependsOn:classes) {
+    classifier('sources')
+    from sourceSets.main.allJava
+}
+
+artifacts {
+    archives sourceJar, devJar
+}
+
+configurations {
+    shade
+    
+    compile.extendsFrom(shade)
 }
 
 minecraft {
-    version = "1.7.10-10.13.4.1614-1.7.10"
-    runDir = "eclipse"
+    version = "${buildprop.game_version}-${buildprop.forge_version}-${buildprop.game_version}"
+    runDir = buildprop.run_dir
+    replace '@VERSION@', project.version
 }
-
 dependencies {
-    compile "codechicken:CodeChickenLib:1.7.10-1.1.3.138:dev"
-    compile "codechicken:CodeChickenCore:1.7.10-1.0.7.47:dev"
-    compile "codechicken:NotEnoughItems:1.7.10-1.0.5.120:dev"
-    compile "mcp.mobius.waila:Waila:1.5.10_1.7.10"
-    compile 'com.github.MJaroslav:MJUtils:1.5.0'
+    compile "codechicken:CodeChickenLib:${buildprop.ccl_version}:dev"
+    compile "codechicken:CodeChickenCore:${buildprop.ccc_version}:dev"
+    compile "codechicken:NotEnoughItems:${buildprop.nei_version}:dev"
+    compile "mcp.mobius.waila:Waila:${buildprop.waila_version}"
+    compile "com.github.MJaroslav:MJUtils:${buildprop.mjutils_version}"
+    shade "com.github.MJaroslav.Reflectors:library:${buildprop.reflectors_version}"
+
+    compileOnly "org.jetbrains:annotations:${buildprop.jetbrains_annotations_version}"
+
+    compileOnly "org.projectlombok:lombok:${buildprop.lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${buildprop.lombok_version}"
+
+    testCompileOnly "org.projectlombok:lombok:${buildprop.lombok_version}"
+    testAnnotationProcessor "org.projectlombok:lombok:${buildprop.lombok_version}"
 }
 
 processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    includeEmptyDirs = false
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version': project.version, 'mcversion': project.minecraft.version
     }
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
-    rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
-jar {
-    manifest.attributes('FMLAT': 'heracleum_at.cfg')
+tasks.withType(Jar)*.doFirst {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    includeEmptyDirs = false
+    if((name == "jar" || name == "devJar" || name == "sourcesJar")) {
+        if (buildprop.coremod.toBoolean())
+            manifest {
+                // TODO: Don't forged about -Dfml.coreMods.load
+                attributes "FMLCorePlugin": "${project.group}.${project.name.replace(" ", "").toLowerCase()}.asm.${project.name.replace(" ", "")}Plugin"
+                attributes "FMLCorePluginContainsFMLMod": "true"
+            }
+        configurations.shade.each { dep ->
+            from project.zipTree(dep)
+        }
+    }
 }

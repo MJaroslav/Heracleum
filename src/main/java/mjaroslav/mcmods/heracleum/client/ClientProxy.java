@@ -1,5 +1,6 @@
 package mjaroslav.mcmods.heracleum.client;
 
+import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.relauncher.Side;
@@ -17,12 +18,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
-    public Minecraft getMinecraft() {
-        return Minecraft.getMinecraft();
-    }
-
-    @Override
     public void init(FMLInitializationEvent event) {
-        rendererTileEntity(TileEntityHeracleum.class, new RenderTileEntityHeracleum());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityHeracleum.class, new RenderTileEntityHeracleum());
     }
 }

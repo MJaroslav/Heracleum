@@ -4,11 +4,10 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import mjaroslav.mcmods.mjutils.lib.module.ProxyBase;
-import net.minecraft.client.Minecraft;
+import mjaroslav.mcmods.mjutils.module.Proxy;
 import net.minecraft.entity.player.EntityPlayer;
 
-public class CommonProxy extends ProxyBase {
+public class CommonProxy extends Proxy {
     @Override
     public void init(FMLInitializationEvent arg0) {
     }
@@ -24,11 +23,6 @@ public class CommonProxy extends ProxyBase {
     @Override
     public EntityPlayer getEntityPlayer(MessageContext ctx) {
         return ctx.getServerHandler().playerEntity;
-    }
-
-    @Override
-    public Minecraft getMinecraft() {
-        return null;
     }
 
     @Override

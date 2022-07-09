@@ -1,6 +1,6 @@
-package mjaroslav.mcmods.heracleum;
+package com.github.mjaroslav.heracleum;
 
-import static mjaroslav.mcmods.heracleum.lib.ModInfo.*;
+import static com.github.mjaroslav.heracleum.lib.ModInfo.*;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -15,9 +15,9 @@ import mjaroslav.mcmods.mjutils.module.ModuleSystem;
 import mjaroslav.mcmods.mjutils.module.Proxy;
 
 @Mod(modid = MODID, name = NAME, version = VERSION, guiFactory = GUIFACTORY)
-public class ModHeracleum {
+public class HeracleumMod {
     @Instance
-    public static ModHeracleum instance;
+    public static HeracleumMod instance;
 
     @SidedProxy(clientSide = CLIENTPROXY, serverSide = COMMONPROXY)
     public static Proxy proxy;

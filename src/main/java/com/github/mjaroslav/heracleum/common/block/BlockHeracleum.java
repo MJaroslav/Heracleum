@@ -1,10 +1,11 @@
-package mjaroslav.mcmods.heracleum.common.block;
+package com.github.mjaroslav.heracleum.common.block;
 
 import java.util.List;
 
+import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import mjaroslav.mcmods.heracleum.common.tileentity.TileEntityHeracleum;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -27,7 +28,8 @@ public class BlockHeracleum extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB bb, List list, Entity entity) {
+    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB bb,
+            @SuppressWarnings("rawtypes") List list, Entity entity) {
         int meta = world.getBlockMetadata(x, y, z);
         if (meta > 0) {
             if (meta != 3)
@@ -60,6 +62,7 @@ public class BlockHeracleum extends Block implements ITileEntityProvider {
         return -1;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void getSubBlocks(Item item, CreativeTabs tab, List list) {
         for (int i = 0; i < 4; i++)

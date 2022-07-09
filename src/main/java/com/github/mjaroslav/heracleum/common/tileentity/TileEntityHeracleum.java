@@ -1,4 +1,4 @@
-package mjaroslav.mcmods.heracleum.common.tileentity;
+package com.github.mjaroslav.heracleum.common.tileentity;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;

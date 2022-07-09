@@ -1,11 +1,12 @@
-package mjaroslav.mcmods.heracleum.client.gui;
+package com.github.mjaroslav.heracleum.client.gui;
 
 import java.util.Set;
 
+import com.github.mjaroslav.heracleum.HeracleumMod;
+import com.github.mjaroslav.heracleum.lib.ModInfo;
+
 import cpw.mods.fml.client.IModGuiFactory;
 import cpw.mods.fml.client.config.GuiConfig;
-import mjaroslav.mcmods.heracleum.ModHeracleum;
-import mjaroslav.mcmods.heracleum.lib.ModInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 
@@ -27,7 +28,7 @@ public class ModGuiFactory implements IModGuiFactory {
 
     public static class ConfigGui extends GuiConfig {
         public ConfigGui(GuiScreen parentScreen) {
-            super(parentScreen, ModHeracleum.config.generalToElementList(), ModInfo.MODID, false, false, ModInfo.NAME);
+            super(parentScreen, HeracleumMod.config.generalToElementList(), ModInfo.MODID, false, false, ModInfo.NAME);
         }
     }
 }

@@ -1,14 +1,15 @@
-package mjaroslav.mcmods.heracleum.common.init;
+package com.github.mjaroslav.heracleum.common.init;
+
+import com.github.mjaroslav.heracleum.common.block.BlockHeracleum;
+import com.github.mjaroslav.heracleum.common.block.ItemBlockHeracleum;
+import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
+import com.github.mjaroslav.heracleum.lib.ModInfo;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import mjaroslav.mcmods.heracleum.common.block.BlockHeracleum;
-import mjaroslav.mcmods.heracleum.common.block.ItemBlockHeracleum;
-import mjaroslav.mcmods.heracleum.common.tileentity.TileEntityHeracleum;
-import mjaroslav.mcmods.heracleum.lib.ModInfo;
 import mjaroslav.mcmods.mjutils.module.Modular;
 import mjaroslav.mcmods.mjutils.module.Module;
 import net.minecraft.block.Block;

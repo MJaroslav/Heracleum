@@ -1,4 +1,4 @@
-package mjaroslav.mcmods.heracleum.common.block;
+package com.github.mjaroslav.heracleum.common.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;

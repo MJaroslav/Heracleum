@@ -1,9 +1,9 @@
-package mjaroslav.mcmods.heracleum.client.render.tileentity;
+package com.github.mjaroslav.heracleum.client.render.tileentity;
 
 import org.lwjgl.opengl.GL11;
 
-import mjaroslav.mcmods.heracleum.lib.ModInfo;
-import net.minecraft.block.Block;
+import com.github.mjaroslav.heracleum.lib.ModInfo;
+
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;

@@ -1,36 +1,37 @@
 package com.github.mjaroslav.heracleum.common.block;
 
-import java.util.List;
-
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import lombok.val;
+import lombok.var;
 import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
+import org.jetbrains.annotations.UnknownNullability;
 
-public class BlockHeracleum extends Block implements ITileEntityProvider {
+import java.util.List;
+
+public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> {
     public BlockHeracleum() {
-        super(Material.grass);
-        setBlockName("heracleum");
+        super("heracleum", Material.grass, TileEntityHeracleum.class);
         setBlockTextureName("minecraft:tallgrass");
         setStepSound(Block.soundTypeGrass);
         setCreativeTab(CreativeTabs.tabDecorations);
     }
 
     @Override
-    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB bb,
-            @SuppressWarnings("rawtypes") List list, Entity entity) {
-        int meta = world.getBlockMetadata(x, y, z);
+    public void addCollisionBoxesToList(@NotNull World world, int x, int y, int z, @NotNull AxisAlignedBB bb,
+                                        @NotNull List list, @NotNull Entity entity) {
+        val meta = world.getBlockMetadata(x, y, z);
         if (meta > 0) {
             if (meta != 3)
                 setBlockBounds(0.4375F, 0, 0.4375F, 0.5625F, 1, 0.5625F);
@@ -41,19 +42,19 @@ public class BlockHeracleum extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z) {
+    public void setBlockBoundsBasedOnState(@NotNull IBlockAccess world, int x, int y, int z) {
         setBlockBounds(0.2F, 0, 0.2F, 0.8F, world.getBlockMetadata(x, y, z) > 0 ? 1F : 0.5F, 0.8F);
     }
 
     @Override
-    public int getDamageValue(World world, int x, int y, int z) {
-        int meta = world.getBlockMetadata(x, y, z);
+    public @Range(from = 0, to = Short.MAX_VALUE) int getDamageValue(@NotNull World world, int x, int y, int z) {
+        val meta = world.getBlockMetadata(x, y, z);
         return meta > 3 ? 0 : meta;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public int colorMultiplier(IBlockAccess world, int x, int y, int z) {
+    public int colorMultiplier(@NotNull IBlockAccess world, int x, int y, int z) {
         return world.getBiomeGenForCoords(x, z).getBiomeGrassColor(x, y, z);
     }
 
@@ -62,10 +63,10 @@ public class BlockHeracleum extends Block implements ITileEntityProvider {
         return -1;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
-    public void getSubBlocks(Item item, CreativeTabs tab, List list) {
-        for (int i = 0; i < 4; i++)
+    public void getSubBlocks(@NotNull Item item, @UnknownNullability CreativeTabs tab, @NotNull List list) {
+        for (var i = 0; i < 4; i++)
             list.add(new ItemStack(item, 1, i));
     }
 
@@ -80,7 +81,8 @@ public class BlockHeracleum extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntityHeracleum createNewTileEntity(@NotNull World world,
+                                                   @Range(from = 0, to = 15) int metadata) {
         return new TileEntityHeracleum();
     }
 }

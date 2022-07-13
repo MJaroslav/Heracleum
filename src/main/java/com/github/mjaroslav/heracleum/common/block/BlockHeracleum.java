@@ -1,5 +1,6 @@
 package com.github.mjaroslav.heracleum.common.block;
 
+import com.github.mjaroslav.heracleum.common.item.ItemBlockWithMetadata;
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -12,6 +13,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.world.ColorizerGrass;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +24,7 @@ import java.util.List;
 
 public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> {
     public BlockHeracleum() {
-        super("heracleum", Material.grass, TileEntityHeracleum.class);
+        super("heracleum", Material.plants, TileEntityHeracleum.class, ItemBlockWithMetadata.class);
         setBlockTextureName("minecraft:tallgrass");
         setStepSound(Block.soundTypeGrass);
         setCreativeTab(CreativeTabs.tabDecorations);
@@ -31,6 +33,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> {
     @Override
     public void addCollisionBoxesToList(@NotNull World world, int x, int y, int z, @NotNull AxisAlignedBB bb,
                                         @NotNull List list, @NotNull Entity entity) {
+        // TODO: WFT?
         val meta = world.getBlockMetadata(x, y, z);
         if (meta > 0) {
             if (meta != 3)
@@ -84,5 +87,17 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> {
     public TileEntityHeracleum createNewTileEntity(@NotNull World world,
                                                    @Range(from = 0, to = 15) int metadata) {
         return new TileEntityHeracleum();
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public int getBlockColor() {
+        return ColorizerGrass.getGrassColor(0.5, 1.0);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public int getRenderColor(@Range(from = 0, to = 16) int meta) {
+        return getBlockColor();
     }
 }

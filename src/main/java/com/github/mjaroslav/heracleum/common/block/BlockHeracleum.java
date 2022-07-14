@@ -37,6 +37,12 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
             new Class<?>[0], new Object[0]);
 
     private static boolean tileRegistered = false;
+    private ThreadLocal<Boolean> harvestedByShearsItem = new ThreadLocal() {
+        @Override
+        protected Object initialValue() {
+            return false;
+        }
+    };
 
     @NotNull
     public final Part part;
@@ -125,7 +131,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @SideOnly(Side.CLIENT)
     @Override
-    public int getRenderColor(@Range(from = 0, to = 16) int meta) {
+    public int getRenderColor(@Range(from = 0, to = 15) int meta) {
         return getBlockColor();
     }
 
@@ -169,14 +175,22 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     }
 
     @Override
-    public Item getItemDropped(@Range(from = 0, to = 16) int meta, @NotNull Random rand, int fortune) {
-        return part == Part.TOP || part == Part.MIDDLE ? ModItems.heracleumUmbel : null;
+    public ArrayList<ItemStack> getDrops(@NotNull World world, int x, int y, int z,
+                                         @Range(from = 0, to = 15) int metadata, int fortune) {
+        val result = super.getDrops(world, x, y, z, metadata, fortune);
+        harvestedByShearsItem.set(false);
+        return result;
+    }
+
+    @Override
+    public Item getItemDropped(@Range(from = 0, to = 15) int meta, @NotNull Random rand, int fortune) {
+        return !harvestedByShearsItem.get() && (part == Part.TOP || part == Part.MIDDLE) ? ModItems.heracleumUmbel : null;
     }
 
     @Override
     public int quantityDropped(int meta, int fortune, Random random) {
-        return part == Part.TOP ? 1 + random.nextInt(6) + random.nextInt(fortune) :
-                part == Part.MIDDLE ? 1 + random.nextInt(3) + random.nextInt(fortune) :
+        return part == Part.TOP ? 1 + random.nextInt(6) + random.nextInt(fortune + 1) :
+                part == Part.MIDDLE ? 1 + random.nextInt(3) + random.nextInt(fortune + 1) :
                         super.quantityDropped(meta, fortune, random);
     }
 
@@ -215,6 +229,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public @NotNull ArrayList<ItemStack> onSheared(@NotNull ItemStack item, @NotNull IBlockAccess world, int x, int y, int z, int fortune) {
+        harvestedByShearsItem.set(true);
         return part == Part.UNKNOWN ? Lists.newArrayList() : Lists.newArrayList(new ItemStack(this, 1, part.stackDamage));
     }
 

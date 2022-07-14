@@ -55,6 +55,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
             case MIDDLE:
             case BOTTOM:
                 setBlockName(prefix("heracleum_stem"));
+                break;
             case SPROUT:
                 setBlockName(prefix("heracleum_sprout"));
         }

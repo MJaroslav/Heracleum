@@ -26,7 +26,7 @@ public class ModBlock extends Block {
     }
 
     protected void registerBlock(@NotNull String name, @Nullable Class<? extends ItemBlock> itemBlockClass, @Nullable Object... itemCtorArgs) {
-        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, prefix(name),
+        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, name,
                 itemCtorArgs);
     }
 }

@@ -37,7 +37,7 @@ public abstract class ModBlockContainer<T extends TileEntity> extends BlockConta
 
     protected void registerBlock(@NotNull String name, @Nullable Class<? extends ItemBlock> itemBlockClass,
                                  @NotNull Object... itemCtorArgs) {
-        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, prefix(name),
+        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, name,
                 itemCtorArgs);
     }
 

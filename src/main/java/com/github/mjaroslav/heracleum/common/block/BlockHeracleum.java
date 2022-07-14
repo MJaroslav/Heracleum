@@ -1,6 +1,5 @@
 package com.github.mjaroslav.heracleum.common.block;
 
-import com.github.mjaroslav.heracleum.common.init.ModBlocks;
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
@@ -11,6 +10,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ColorizerGrass;
@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.EnumPlantType;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.IShearable;
+import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
@@ -29,8 +30,12 @@ import java.util.List;
 import java.util.Random;
 
 import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
+import static net.minecraftforge.common.EnumPlantType.Plains;
 
 public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> implements IPlantable, IShearable {
+    public static final EnumPlantType typeHeracleum = EnumHelper.addEnum(EnumPlantType.class, "Heracleum",
+            new Class<?>[0], new Object[0]);
+
     private static boolean tileRegistered = false;
 
     @NotNull
@@ -52,6 +57,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     @Override
     protected void registerTile(@NotNull String name) {
         if (!tileRegistered) {
+            // One tile for all childs of this block type
             super.registerTile("heracleum");
             tileRegistered = true;
         }
@@ -116,7 +122,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public EnumPlantType getPlantType(@NotNull IBlockAccess world, int x, int y, int z) {
-        return EnumPlantType.Plains;
+        return (part == Part.SPROUT || part == Part.BOTTOM) ? Plains : typeHeracleum;
     }
 
     @Override
@@ -151,10 +157,21 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         return block.canSustainPlant(world, x, y - 1, z, ForgeDirection.UP, this);
     }
 
+    @Override
+    public Item getItemDropped(@Range(from = 0, to = 16) int meta, @NotNull Random rand, int fortune) {
+        return null;
+    }
+
+    @Override
+    protected boolean canSilkHarvest() {
+        return true;
+    }
+
     protected void checkAndDropBlock(@NotNull World world, int x, int y, int z) {
         if (!canBlockStay(world, x, y, z)) {
-            // TODO: rewrite this, it's not work properly 
-            dropBlockAsItem(world, x, y, z, part.stackDamage, 0);
+            // TODO: rewrite this, it's not work properly
+            if (part != Part.UNKNOWN)
+                dropBlockAsItem(world, x, y, z, part.stackDamage, 0);
 
             world.setBlockToAir(x, y, z);
         }
@@ -163,22 +180,24 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     @Override
     public boolean canSustainPlant(@NotNull IBlockAccess world, int x, int y, int z, @NotNull ForgeDirection direction, @NotNull IPlantable plantable) {
         val plant = plantable.getPlant(world, x, y + 1, z);
-        if (plant == ModBlocks.heracleumTop)
-            return this == ModBlocks.heracleumMiddle || this == ModBlocks.heracleumBottom;
-        if (plant == ModBlocks.heracleumMiddle)
-            return this == ModBlocks.heracleumBottom;
-        return (plant == ModBlocks.heracleumBottom || plant == ModBlocks.heracleumSprout) &&
-                super.canSustainPlant(world, x, y, z, direction, plantable);
+        if (plant instanceof BlockHeracleum) {
+            val heracleum = (BlockHeracleum) plant;
+            if (heracleum.part == Part.TOP || heracleum.part == Part.MIDDLE)
+                return part == Part.MIDDLE || part == Part.BOTTOM;
+            return (heracleum.part == Part.BOTTOM || heracleum.part == Part.SPROUT) &&
+                    super.canSustainPlant(world, x, y, z, direction, plantable);
+        }
+        return false;
     }
 
     @Override
     public boolean isShearable(@NotNull ItemStack item, @NotNull IBlockAccess world, int x, int y, int z) {
-        return true;
+        return part != Part.UNKNOWN;
     }
 
     @Override
     public @NotNull ArrayList<ItemStack> onSheared(@NotNull ItemStack item, @NotNull IBlockAccess world, int x, int y, int z, int fortune) {
-        return Lists.newArrayList(new ItemStack(this, 1, part.stackDamage));
+        return part == Part.UNKNOWN ? Lists.newArrayList() : Lists.newArrayList(new ItemStack(this, 1, part.stackDamage));
     }
 
     // Костыли, спасибо mc/forge

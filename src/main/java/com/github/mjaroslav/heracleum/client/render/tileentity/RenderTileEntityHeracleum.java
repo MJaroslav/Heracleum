@@ -2,6 +2,7 @@ package com.github.mjaroslav.heracleum.client.render.tileentity;
 
 import com.github.mjaroslav.heracleum.client.render.model.ModelWrapperDisplayList;
 import com.github.mjaroslav.heracleum.common.block.BlockHeracleum;
+import com.github.mjaroslav.heracleum.common.block.BlockHeracleum.Part;
 import lombok.val;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -26,6 +27,8 @@ public final class RenderTileEntityHeracleum extends TileEntitySpecialRenderer {
         if (!(tile.getBlockType() instanceof BlockHeracleum))
             return;
         val heracleum = (BlockHeracleum) tile.getBlockType();
+        if (heracleum.part == Part.UNKNOWN)
+            return;
         glPushMatrix();
         glDisable(GL_CULL_FACE);
         bindTexture(texture);
@@ -47,9 +50,9 @@ public final class RenderTileEntityHeracleum extends TileEntitySpecialRenderer {
                 renderPart(t, "top", brightness, color);
                 renderPart(t, "topOverlay", brightness, 0xFFFFFF);
                 break;
-            default:
-                renderPart(t, "small", brightness, color);
-                renderPart(t, "smallOverlay", brightness, 0xFFFFFF);
+            case SPROUT:
+                renderPart(t, "sprout", brightness, color);
+                renderPart(t, "sproutOverlay", brightness, 0xFFFFFF);
                 break;
         }
         glEnable(GL_CULL_FACE);

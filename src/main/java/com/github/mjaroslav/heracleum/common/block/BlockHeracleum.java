@@ -48,7 +48,16 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         this.part = part;
         // TODO: Add ItemBlock icon or model
         setBlockTextureName("minecraft:tallgrass");
-        setBlockName(prefix("heracleum"));
+        switch (part) {
+            case TOP:
+                setBlockName(prefix("heracleum_umbrella"));
+                break;
+            case MIDDLE:
+            case BOTTOM:
+                setBlockName(prefix("heracleum_stem"));
+            case SPROUT:
+                setBlockName(prefix("heracleum_sprout"));
+        }
         setStepSound(Block.soundTypeGrass);
         setCreativeTab(CreativeTabs.tabDecorations);
         setTickRandomly(true);

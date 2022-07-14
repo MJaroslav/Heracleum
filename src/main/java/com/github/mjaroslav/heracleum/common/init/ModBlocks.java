@@ -21,9 +21,4 @@ public final class ModBlocks implements Modular {
         heracleumMiddle = new BlockHeracleum(Part.MIDDLE);
         heracleumTop = new BlockHeracleum(Part.TOP);
     }
-
-    @Override
-    public boolean canLoad() {
-        return true;
-    }
 }

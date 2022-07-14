@@ -1,5 +1,6 @@
 package com.github.mjaroslav.heracleum.common.block;
 
+import com.github.mjaroslav.heracleum.common.init.ModItems;
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -50,17 +50,16 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         setBlockTextureName("minecraft:tallgrass");
         switch (part) {
             case TOP:
-                setBlockName(prefix("heracleum_umbrella"));
+                setBlockName(prefix("heracleum.umbels"));
                 break;
             case MIDDLE:
             case BOTTOM:
-                setBlockName(prefix("heracleum_stem"));
+                setBlockName(prefix("heracleum.stem"));
                 break;
             case SPROUT:
-                setBlockName(prefix("heracleum_sprout"));
+                setBlockName(prefix("heracleum.sprout"));
         }
         setStepSound(Block.soundTypeGrass);
-        setCreativeTab(CreativeTabs.tabDecorations);
         setTickRandomly(true);
     }
 
@@ -158,7 +157,9 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public void updateTick(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
-        checkAndDropBlock(world, x, y, z);
+        if (checkAndDropBlock(world, x, y, z))
+            return;
+
     }
 
     @Override
@@ -169,7 +170,14 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public Item getItemDropped(@Range(from = 0, to = 16) int meta, @NotNull Random rand, int fortune) {
-        return null;
+        return part == Part.TOP || part == Part.MIDDLE ? ModItems.heracleumUmbel : null;
+    }
+
+    @Override
+    public int quantityDropped(int meta, int fortune, Random random) {
+        return part == Part.TOP ? 1 + random.nextInt(6) + random.nextInt(fortune) :
+                part == Part.MIDDLE ? 1 + random.nextInt(3) + random.nextInt(fortune) :
+                        super.quantityDropped(meta, fortune, random);
     }
 
     @Override
@@ -177,14 +185,14 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         return true;
     }
 
-    protected void checkAndDropBlock(@NotNull World world, int x, int y, int z) {
+    protected boolean checkAndDropBlock(@NotNull World world, int x, int y, int z) {
         if (!canBlockStay(world, x, y, z)) {
-            // TODO: rewrite this, it's not work properly
             if (part != Part.UNKNOWN)
-                dropBlockAsItem(world, x, y, z, part.stackDamage, 0);
-
+                dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
             world.setBlockToAir(x, y, z);
+            return true;
         }
+        return false;
     }
 
     @Override

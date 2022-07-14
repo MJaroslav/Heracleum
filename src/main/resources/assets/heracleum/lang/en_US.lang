@@ -1,3 +1,7 @@
-tile.heracleum:heracleum_sprout.name=Heracleum Sprout
-tile.heracleum:heracleum_stem.name=Heracleum Stem
-tile.heracleum:heracleum_umbrella.name=Heracleum Umbrella
+itemGroup.heracleum=Heracleum
+
+tile.heracleum:heracleum.sprout.name=Hogweed Sprout
+tile.heracleum:heracleum.stem.name=Hogweed Stem
+tile.heracleum:heracleum.umbels.name=Hogweed Umbels
+
+item.heracleum:heracleum_umbel.name=Hogweed Umbel

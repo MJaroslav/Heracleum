@@ -1,5 +1,6 @@
 package com.github.mjaroslav.heracleum;
 
+import com.github.mjaroslav.heracleum.common.util.ModCreativeTab;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -11,6 +12,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import mjaroslav.mcmods.mjutils.module.AnnotationBasedConfiguration;
 import mjaroslav.mcmods.mjutils.module.ModuleSystem;
 import mjaroslav.mcmods.mjutils.module.Proxy;
+import net.minecraft.creativetab.CreativeTabs;
 import org.jetbrains.annotations.NotNull;
 
 import static com.github.mjaroslav.heracleum.lib.ModInfo.*;
@@ -23,6 +25,8 @@ public final class HeracleumMod {
     public static Proxy proxy;
     public static ModuleSystem initHandler;
     public static AnnotationBasedConfiguration config;
+
+    public static final CreativeTabs TAB = new ModCreativeTab();
 
     @EventHandler
     public void preInit(@NotNull FMLPreInitializationEvent event) {

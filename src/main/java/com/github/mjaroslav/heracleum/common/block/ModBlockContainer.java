@@ -1,5 +1,6 @@
 package com.github.mjaroslav.heracleum.common.block;
 
+import com.github.mjaroslav.heracleum.HeracleumMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -13,8 +14,8 @@ import org.jetbrains.annotations.Range;
 import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
 
 public abstract class ModBlockContainer<T extends TileEntity> extends BlockContainer {
-    protected final String name;
-    protected final Class<T> tileEntityClass;
+    protected final @NotNull String name;
+    protected final @NotNull Class<T> tileEntityClass;
 
     public ModBlockContainer(@NotNull String name, @NotNull Material material, @NotNull Class<T> tileEntityClass,
                              @Nullable Class<? extends ItemBlock> itemBlockClass,
@@ -24,6 +25,7 @@ public abstract class ModBlockContainer<T extends TileEntity> extends BlockConta
         this.tileEntityClass = tileEntityClass;
         setBlockTextureName(prefix(name));
         setBlockName(prefix(name));
+        setCreativeTab(HeracleumMod.TAB);
         registerBlock(name, itemBlockClass, itemCtorArgs);
         registerTile(name);
     }

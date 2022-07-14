@@ -1,3 +1,7 @@
-tile.heracleum:heracleum_sprout.name=Побег Борщевика
-tile.heracleum:heracleum_stem.name=Стебель Борщевика
-tile.heracleum:heracleum_umbrella.name=Зонтик Борщевика
+itemGroup.heracleum=Heracleum
+
+tile.heracleum:heracleum.sprout.name=Побег Борщевика
+tile.heracleum:heracleum.stem.name=Стебель Борщевика
+tile.heracleum:heracleum.umbels.name=Зонтики Борщевика
+
+item.heracleum:heracleum_umbel.name=Зонтик Борщевика

@@ -18,11 +18,15 @@ public class ModBlock extends Block {
         this.name = name;
         setBlockTextureName(prefix(name));
         setBlockName(prefix(name));
-        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, prefix(name),
-                itemCtorArgs);
+        registerBlock(name, itemBlockClass, itemCtorArgs);
     }
 
     public ModBlock(@NotNull String name, @NotNull Material material) {
         this(name, material, null);
+    }
+
+    protected void registerBlock(@NotNull String name, @Nullable Class<? extends ItemBlock> itemBlockClass, @Nullable Object... itemCtorArgs) {
+        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, prefix(name),
+                itemCtorArgs);
     }
 }

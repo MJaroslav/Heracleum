@@ -24,9 +24,8 @@ public abstract class ModBlockContainer<T extends TileEntity> extends BlockConta
         this.tileEntityClass = tileEntityClass;
         setBlockTextureName(prefix(name));
         setBlockName(prefix(name));
-        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, prefix(name),
-                itemCtorArgs);
-        GameRegistry.registerTileEntity(tileEntityClass, prefix(name));
+        registerBlock(name, itemBlockClass, itemCtorArgs);
+        registerTile(name);
     }
 
     public ModBlockContainer(@NotNull String name, @NotNull Material material, @NotNull Class<T> tileEntityClass) {
@@ -35,4 +34,14 @@ public abstract class ModBlockContainer<T extends TileEntity> extends BlockConta
 
     @Override
     public abstract @Nullable T createNewTileEntity(@NotNull World world, @Range(from = 0, to = 15) int metadata);
+
+    protected void registerBlock(@NotNull String name, @Nullable Class<? extends ItemBlock> itemBlockClass,
+                                 @NotNull Object... itemCtorArgs) {
+        GameRegistry.registerBlock(this, itemBlockClass == null ? ItemBlock.class : itemBlockClass, prefix(name),
+                itemCtorArgs);
+    }
+
+    protected void registerTile(@NotNull String name) {
+        GameRegistry.registerTileEntity(tileEntityClass, prefix(name));
+    }
 }

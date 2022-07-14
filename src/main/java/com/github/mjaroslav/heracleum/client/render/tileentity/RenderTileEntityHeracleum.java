@@ -1,6 +1,7 @@
 package com.github.mjaroslav.heracleum.client.render.tileentity;
 
 import com.github.mjaroslav.heracleum.client.render.model.ModelWrapperDisplayList;
+import com.github.mjaroslav.heracleum.common.block.BlockHeracleum;
 import lombok.val;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -22,6 +23,9 @@ public final class RenderTileEntityHeracleum extends TileEntitySpecialRenderer {
 
     @Override
     public void renderTileEntityAt(@NotNull TileEntity tile, double x, double y, double z, float partial) {
+        if (!(tile.getBlockType() instanceof BlockHeracleum))
+            return;
+        val heracleum = (BlockHeracleum) tile.getBlockType();
         glPushMatrix();
         glDisable(GL_CULL_FACE);
         bindTexture(texture);
@@ -30,16 +34,16 @@ public final class RenderTileEntityHeracleum extends TileEntitySpecialRenderer {
         val brightness = tile.getBlockType().getMixedBrightnessForBlock(tile.getWorldObj(), tile.xCoord, tile.yCoord,
                 tile.zCoord);
         val color = tile.getBlockType().colorMultiplier(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
-        switch (tile.getWorldObj().getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord)) {
-            case 1:
+        switch (heracleum.part) {
+            case BOTTOM:
                 renderPart(t, "bottom", brightness, color);
                 renderPart(t, "bottomOverlay", brightness, 0xFFFFFF);
                 break;
-            case 2:
+            case MIDDLE:
                 renderPart(t, "middle", brightness, color);
                 renderPart(t, "middleOverlay", brightness, 0xFFFFFF);
                 break;
-            case 3:
+            case TOP:
                 renderPart(t, "top", brightness, color);
                 renderPart(t, "topOverlay", brightness, 0xFFFFFF);
                 break;

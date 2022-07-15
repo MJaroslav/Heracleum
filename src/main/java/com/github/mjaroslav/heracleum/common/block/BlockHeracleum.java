@@ -3,7 +3,6 @@ package com.github.mjaroslav.heracleum.common.block;
 import com.github.mjaroslav.heracleum.common.init.ModItems;
 import com.github.mjaroslav.heracleum.common.item.ItemBlockHeracleum;
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
-import com.github.mjaroslav.heracleum.lib.ModInfo;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -120,7 +119,6 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public boolean canReplace(World world, int x, int y, int z, int side, ItemStack stack) {
-        ModInfo.LOG.info("canReplace");
         blockMeta.set(stack.getItemDamage());
         return super.canReplace(world, x, y, z, side, stack);
     }
@@ -132,9 +130,6 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public int getPlantMetadata(@NotNull IBlockAccess world, int x, int y, int z) {
-        // TODO: Get true fucking meta
-        if (world.isAirBlock(x, y, z))
-            ModInfo.LOG.info("getPlantMetadata");
         return world.isAirBlock(x, y, z) ? blockMeta.get() : world.getBlockMetadata(x, y, z);
     }
 

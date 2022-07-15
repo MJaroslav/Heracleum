@@ -2,7 +2,6 @@ package com.github.mjaroslav.heracleum.client.render.tileentity;
 
 import com.github.mjaroslav.heracleum.client.render.model.ModelWrapperDisplayList;
 import com.github.mjaroslav.heracleum.common.block.BlockHeracleum;
-import com.github.mjaroslav.heracleum.common.block.BlockHeracleum.Part;
 import lombok.val;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -13,6 +12,7 @@ import net.minecraftforge.client.model.IModelCustom;
 import net.minecraftforge.client.model.obj.WavefrontObject;
 import org.jetbrains.annotations.NotNull;
 
+import static com.github.mjaroslav.heracleum.common.block.BlockHeracleum.*;
 import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -26,9 +26,6 @@ public final class RenderTileEntityHeracleum extends TileEntitySpecialRenderer {
     public void renderTileEntityAt(@NotNull TileEntity tile, double x, double y, double z, float partial) {
         if (!(tile.getBlockType() instanceof BlockHeracleum))
             return;
-        val heracleum = (BlockHeracleum) tile.getBlockType();
-        if (heracleum.part == Part.UNKNOWN)
-            return;
         glPushMatrix();
         glDisable(GL_CULL_FACE);
         bindTexture(texture);
@@ -37,20 +34,20 @@ public final class RenderTileEntityHeracleum extends TileEntitySpecialRenderer {
         val brightness = tile.getBlockType().getMixedBrightnessForBlock(tile.getWorldObj(), tile.xCoord, tile.yCoord,
                 tile.zCoord);
         val color = tile.getBlockType().colorMultiplier(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
-        switch (heracleum.part) {
-            case BOTTOM:
+        switch (getPartFromMeta(tile.getBlockMetadata())) {
+            case META_BOTTOM:
                 renderPart(t, "bottom", brightness, color);
                 renderPart(t, "bottomOverlay", brightness, 0xFFFFFF);
                 break;
-            case MIDDLE:
+            case META_MIDDLE:
                 renderPart(t, "middle", brightness, color);
                 renderPart(t, "middleOverlay", brightness, 0xFFFFFF);
                 break;
-            case TOP:
+            case META_TOP:
                 renderPart(t, "top", brightness, color);
                 renderPart(t, "topOverlay", brightness, 0xFFFFFF);
                 break;
-            case SPROUT:
+            case META_SPROUT:
                 renderPart(t, "sprout", brightness, color);
                 renderPart(t, "sproutOverlay", brightness, 0xFFFFFF);
                 break;

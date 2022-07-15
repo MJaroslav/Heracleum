@@ -1,11 +1,12 @@
 package com.github.mjaroslav.heracleum.common.block;
 
 import com.github.mjaroslav.heracleum.common.init.ModItems;
+import com.github.mjaroslav.heracleum.common.item.ItemBlockHeracleum;
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
+import com.github.mjaroslav.heracleum.lib.ModInfo;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -29,59 +30,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
 import static net.minecraftforge.common.EnumPlantType.Plains;
 
 public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> implements IPlantable, IShearable {
     public static final EnumPlantType typeHeracleum = EnumHelper.addEnum(EnumPlantType.class, "Heracleum",
             new Class<?>[0], new Object[0]);
 
-    private static boolean tileRegistered = false;
-    private ThreadLocal<Boolean> harvestedByShearsItem = new ThreadLocal() {
-        @Override
-        protected Object initialValue() {
-            return false;
-        }
-    };
+    public static final int META_SPROUT = 0b00;
+    public static final int META_BOTTOM = 0b01;
+    public static final int META_MIDDLE = 0b10;
+    public static final int META_TOP = 0b11;
 
-    @NotNull
-    public final Part part;
+    public final ThreadLocal<Boolean> harvestedByShearsItem = ThreadLocal.withInitial(() -> false);
+    private final ThreadLocal<Integer> blockMeta = ThreadLocal.withInitial(() -> 0);
 
-    public BlockHeracleum(@NotNull Part part) {
-        super("heracleum_" + part.name().toLowerCase(), Material.plants, TileEntityHeracleum.class);
-        if (part == Part.UNKNOWN)
-            throw new IllegalArgumentException("UNKNOWN is preserved value for internal logic");
-        this.part = part;
+    public BlockHeracleum() {
+        super("heracleum", Material.plants, TileEntityHeracleum.class, ItemBlockHeracleum.class);
         // TODO: Add ItemBlock icon or model
         setBlockTextureName("minecraft:tallgrass");
-        switch (part) {
-            case TOP:
-                setBlockName(prefix("heracleum.umbels"));
-                break;
-            case MIDDLE:
-            case BOTTOM:
-                setBlockName(prefix("heracleum.stem"));
-                break;
-            case SPROUT:
-                setBlockName(prefix("heracleum.sprout"));
-        }
         setStepSound(Block.soundTypeGrass);
         setTickRandomly(true);
     }
 
     @Override
-    protected void registerTile(@NotNull String name) {
-        if (!tileRegistered) {
-            // One tile for all childs of this block type
-            super.registerTile("heracleum");
-            tileRegistered = true;
-        }
-    }
-
-    @Override
-    public void addCollisionBoxesToList(@NotNull World world, int x, int y, int z, @NotNull AxisAlignedBB bb, @NotNull List list, @UnknownNullability Entity entity) {
-        if (part != Part.SPROUT)
-            setBlockBounds(0.5F - 1F / 16F, 0F, 0.5F - 1F / 16F, 0.5F + 1F / 16F, part == Part.TOP ? 0F : 1F, 0.5F + 1F / 16F);
+    public void addCollisionBoxesToList(@NotNull World world, int x, int y, int z, @NotNull AxisAlignedBB bb,
+                                        @NotNull List list, @UnknownNullability Entity entity) {
+        val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
+        if (part != META_SPROUT)
+            setBlockBounds(0.5F - 1F / 16F, 0F, 0.5F - 1F / 16F, 0.5F + 1F / 16F, part == META_TOP ? 0F : 1F, 0.5F + 1F / 16F);
         else
             setBlockBounds(0.5F - 0.5F / 16F, 0F, 0.5F - 0.5F / 16F, 0.5F + 0.5F / 16F, 0.5F, 0.5F + 0.5F / 16F);
         super.addCollisionBoxesToList(world, x, y, z, bb, list, entity);
@@ -89,12 +65,13 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public void setBlockBoundsBasedOnState(@NotNull IBlockAccess world, int x, int y, int z) {
-        setBlockBounds(0.2F, 0, 0.2F, 0.8F, part != Part.SPROUT ? 1F : 0.5F, 0.8F);
+        val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
+        setBlockBounds(0.2F, 0, 0.2F, 0.8F, part != META_SPROUT ? 1F : 0.5F, 0.8F);
     }
 
     @Override
     public @Range(from = 0, to = Short.MAX_VALUE) int getDamageValue(@NotNull World world, int x, int y, int z) {
-        return part.stackDamage;
+        return getPartFromMeta(world.getBlockMetadata(x, y, z));
     }
 
     @SideOnly(Side.CLIENT)
@@ -137,7 +114,15 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public EnumPlantType getPlantType(@NotNull IBlockAccess world, int x, int y, int z) {
-        return (part == Part.SPROUT || part == Part.BOTTOM) ? Plains : typeHeracleum;
+        val part = getPartFromMeta(getPlantMetadata(world, x, y, z));
+        return (part == META_SPROUT || part == META_BOTTOM) ? Plains : typeHeracleum;
+    }
+
+    @Override
+    public boolean canReplace(World world, int x, int y, int z, int side, ItemStack stack) {
+        ModInfo.LOG.info("canReplace");
+        blockMeta.set(stack.getItemDamage());
+        return super.canReplace(world, x, y, z, side, stack);
     }
 
     @Override
@@ -147,7 +132,10 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public int getPlantMetadata(@NotNull IBlockAccess world, int x, int y, int z) {
-        return 0;
+        // TODO: Get true fucking meta
+        if (world.isAirBlock(x, y, z))
+            ModInfo.LOG.info("getPlantMetadata");
+        return world.isAirBlock(x, y, z) ? blockMeta.get() : world.getBlockMetadata(x, y, z);
     }
 
     @Override
@@ -184,13 +172,15 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public Item getItemDropped(@Range(from = 0, to = 15) int meta, @NotNull Random rand, int fortune) {
-        return !harvestedByShearsItem.get() && (part == Part.TOP || part == Part.MIDDLE) ? ModItems.heracleumUmbel : null;
+        val part = getPartFromMeta(meta);
+        return !harvestedByShearsItem.get() && (part == META_TOP || part == META_MIDDLE) ? ModItems.heracleumUmbel : null;
     }
 
     @Override
     public int quantityDropped(int meta, int fortune, Random random) {
-        return part == Part.TOP ? 1 + random.nextInt(6) + random.nextInt(fortune + 1) :
-                part == Part.MIDDLE ? 1 + random.nextInt(3) + random.nextInt(fortune + 1) :
+        val part = getPartFromMeta(meta);
+        return part == META_TOP ? 1 + random.nextInt(6) + random.nextInt(fortune + 1) :
+                part == META_MIDDLE ? 1 + random.nextInt(3) + random.nextInt(fortune + 1) :
                         super.quantityDropped(meta, fortune, random);
     }
 
@@ -201,8 +191,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     protected boolean checkAndDropBlock(@NotNull World world, int x, int y, int z) {
         if (!canBlockStay(world, x, y, z)) {
-            if (part != Part.UNKNOWN)
-                dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+            dropBlockAsItem(world, x, y, z, getPartFromMeta(world.getBlockMetadata(x, y, z)), 0);
             world.setBlockToAir(x, y, z);
             return true;
         }
@@ -213,10 +202,11 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     public boolean canSustainPlant(@NotNull IBlockAccess world, int x, int y, int z, @NotNull ForgeDirection direction, @NotNull IPlantable plantable) {
         val plant = plantable.getPlant(world, x, y + 1, z);
         if (plant instanceof BlockHeracleum) {
-            val heracleum = (BlockHeracleum) plant;
-            if (heracleum.part == Part.TOP || heracleum.part == Part.MIDDLE)
-                return part == Part.MIDDLE || part == Part.BOTTOM;
-            return (heracleum.part == Part.BOTTOM || heracleum.part == Part.SPROUT) &&
+            val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
+            val heracleumPart = getPartFromMeta(plantable.getPlantMetadata(world, x, y + 1, z));
+            if (heracleumPart == META_TOP || heracleumPart == META_MIDDLE)
+                return part == META_MIDDLE || part == META_BOTTOM;
+            return (heracleumPart == META_BOTTOM || heracleumPart == META_SPROUT) &&
                     super.canSustainPlant(world, x, y, z, direction, plantable);
         }
         return false;
@@ -224,20 +214,16 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public boolean isShearable(@NotNull ItemStack item, @NotNull IBlockAccess world, int x, int y, int z) {
-        return part != Part.UNKNOWN;
+        return true;
     }
 
     @Override
     public @NotNull ArrayList<ItemStack> onSheared(@NotNull ItemStack item, @NotNull IBlockAccess world, int x, int y, int z, int fortune) {
         harvestedByShearsItem.set(true);
-        return part == Part.UNKNOWN ? Lists.newArrayList() : Lists.newArrayList(new ItemStack(this, 1, part.stackDamage));
+        return Lists.newArrayList(new ItemStack(this, 1, world.getBlockMetadata(x, y, z)));
     }
 
-    // Костыли, спасибо mc/forge
-    @RequiredArgsConstructor
-    public static enum Part {
-        UNKNOWN(-1), SPROUT(0), BOTTOM(1), MIDDLE(2), TOP(3);
-
-        private final int stackDamage;
+    public static int getPartFromMeta(int meta) {
+        return meta & 3;
     }
 }

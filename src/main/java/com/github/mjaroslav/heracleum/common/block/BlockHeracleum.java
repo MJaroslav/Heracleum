@@ -85,7 +85,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     @Override
     public @Range(from = 0, to = Short.MAX_VALUE) int getDamageValue(@NotNull World world, int x, int y, int z) {
-        return getPartFromMeta(world.getBlockMetadata(x, y, z));
+        return world.getBlockMetadata(x, y, z);
     }
 
     @SideOnly(Side.CLIENT)
@@ -176,7 +176,40 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     public void updateTick(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
         if (checkAndDropBlock(world, x, y, z))
             return;
+        if (tryGrowth(world, x, y, z, rand))
+            return;
+    }
 
+
+    // TODO: Fix this
+    protected boolean tryGrowth(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
+        if (!world.isAirBlock(x, y + 1, z))
+            return false;
+        val meta = world.getBlockMetadata(x, y, z);
+        if (isDryFromMeta(meta))
+            return false;
+        val part = getPartFromMeta(meta);
+        val blooming = isBloomingFromMeta(meta);
+        var newMeta = META_PART_SPROUT;
+        switch (part) {
+            case META_PART_SPROUT:
+                newMeta = META_PART_BOTTOM;
+                break;
+            case META_PART_BOTTOM:
+                newMeta = META_PART_BOTTOM;
+                break;
+            case META_PART_MIDDLE:
+                newMeta = META_PART_MIDDLE;
+                break;
+            case META_PART_TOP:
+                newMeta = blooming ? META_PART_MIDDLE : META_PART_TOP;
+                break;
+        }
+        if (blooming) {
+            world.setBlockMetadataWithNotify(x, y, z, newMeta | META_BIT_BLOOM, 2);
+            world.setBlock(x, y + 1, z, this, META_PART_TOP, 4);
+        } else world.setBlockMetadataWithNotify(x, y, z, newMeta | META_BIT_BLOOM, 2);
+        return true;
     }
 
     @Override

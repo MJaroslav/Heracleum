@@ -6,6 +6,13 @@ tile.heracleum:heracleum.umbels.name=Зонтики Борщевика
 tile.heracleum:heracleum.sprout.dry.name=Сухой Побег Борщевика
 tile.heracleum:heracleum.stem.dry.name=Сухой Стебель Борщевика
 tile.heracleum:heracleum.umbels.dry.name=Сухие Зонтики Борщевика
+tile.heracleum:heracleum.sprout.blooming.name=Побег Цветущего Борщевика
+tile.heracleum:heracleum.stem.blooming.name=Стебель Цветущего Борщевика
+tile.heracleum:heracleum.umbels.blooming.name=Зонтики Цветущего Борщевика
+tile.heracleum:heracleum.sprout.dry.blooming.name=Сухой Побег Цветущего Борщевика
+tile.heracleum:heracleum.stem.dry.blooming.name=Сухой Стебель Цветущего Борщевика
+tile.heracleum:heracleum.umbels.dry.blooming.name=Сухие Зонтики Цветущего Борщевика
+
 
 item.heracleum:heracleum_umbel.name=Зонтик Борщевика
 item.heracleum:heracleum_stem.name=Стебель Борщевика

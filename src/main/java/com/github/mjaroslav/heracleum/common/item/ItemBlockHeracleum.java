@@ -16,22 +16,26 @@ public class ItemBlockHeracleum extends ItemBlockWithMetadata {
     @Override
     public String getUnlocalizedName(@NotNull ItemStack stack) {
         var result = getUnlocalizedName();
-        val part = getPartFromMeta(stack.getItemDamage());
-        val dry = isDryFromMeta(stack.getItemDamage());
+        val damage = stack.getItemDamage();
+        val part = getPartFromMeta(damage);
+        val dry = isDryFromMeta(damage);
+        var blooming = isBloomingFromMeta(damage);
         switch (part) {
-            case META_SPROUT:
+            case META_PART_SPROUT:
                 result += ".sprout";
                 break;
-            case META_MIDDLE:
-            case META_BOTTOM:
+            case META_PART_MIDDLE:
+            case META_PART_BOTTOM:
                 result += ".stem";
                 break;
-            case META_TOP:
+            case META_PART_TOP:
                 result += ".umbels";
                 break;
         }
         if (dry)
             result += ".dry";
+        if (blooming)
+            result += ".blooming";
         return result;
     }
 }

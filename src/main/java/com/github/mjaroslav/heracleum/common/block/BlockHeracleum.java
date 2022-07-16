@@ -4,7 +4,6 @@ import com.github.mjaroslav.heracleum.common.init.ModItems;
 import com.github.mjaroslav.heracleum.common.item.ItemBlockHeracleum;
 import com.github.mjaroslav.heracleum.common.item.ItemHeracleumStem;
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
-import com.github.mjaroslav.heracleum.lib.ModInfo;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -42,11 +41,12 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
 
     public static final int COLOR_DRY = 0xB5B54A;
 
-    public static final int META_SPROUT = 0b000;
-    public static final int META_BOTTOM = 0b001;
-    public static final int META_MIDDLE = 0b010;
-    public static final int META_TOP = 0b011;
-    public static final int META_DRY = 0b100;
+    public static final int META_PART_SPROUT = 0b0000;
+    public static final int META_PART_BOTTOM = 0b0001;
+    public static final int META_PART_MIDDLE = 0b0010;
+    public static final int META_PART_TOP = 0b0011;
+    public static final int META_BIT_DRY = 0b0100;
+    public static final int META_BIT_BLOOM = 0b1000;
 
     private final ThreadLocal<Boolean> harvestedByShearsItem = ThreadLocal.withInitial(() -> false);
     private final ThreadLocal<Integer> blockMeta = ThreadLocal.withInitial(() -> 0);
@@ -62,22 +62,16 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     @SideOnly(Side.CLIENT)
     @Override
     public void getSubBlocks(@NotNull Item item, @UnknownNullability CreativeTabs tab, @NotNull List list) {
-        list.add(new ItemStack(this, 1, META_SPROUT));
-        list.add(new ItemStack(this, 1, META_BOTTOM));
-        list.add(new ItemStack(this, 1, META_MIDDLE));
-        list.add(new ItemStack(this, 1, META_TOP));
-        list.add(new ItemStack(this, 1, META_SPROUT | META_DRY));
-        list.add(new ItemStack(this, 1, META_BOTTOM | META_DRY));
-        list.add(new ItemStack(this, 1, META_MIDDLE | META_DRY));
-        list.add(new ItemStack(this, 1, META_TOP | META_DRY));
+        for (var i = 0; i < 16; i++)
+            list.add(new ItemStack(this, 1, i));
     }
 
     @Override
     public void addCollisionBoxesToList(@NotNull World world, int x, int y, int z, @NotNull AxisAlignedBB bb,
                                         @NotNull List list, @UnknownNullability Entity entity) {
         val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
-        if (part != META_SPROUT)
-            setBlockBounds(0.5F - 1F / 16F, 0F, 0.5F - 1F / 16F, 0.5F + 1F / 16F, part == META_TOP ? 0F : 1F, 0.5F + 1F / 16F);
+        if (part != META_PART_SPROUT)
+            setBlockBounds(0.5F - 1F / 16F, 0F, 0.5F - 1F / 16F, 0.5F + 1F / 16F, part == META_PART_TOP ? 0F : 1F, 0.5F + 1F / 16F);
         else
             setBlockBounds(0.5F - 0.5F / 16F, 0F, 0.5F - 0.5F / 16F, 0.5F + 0.5F / 16F, 0.5F, 0.5F + 0.5F / 16F);
         super.addCollisionBoxesToList(world, x, y, z, bb, list, entity);
@@ -86,7 +80,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     @Override
     public void setBlockBoundsBasedOnState(@NotNull IBlockAccess world, int x, int y, int z) {
         val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
-        setBlockBounds(0.2F, 0, 0.2F, 0.8F, part != META_SPROUT ? 1F : 0.5F, 0.8F);
+        setBlockBounds(0.2F, 0, 0.2F, 0.8F, part != META_PART_SPROUT ? 1F : 0.5F, 0.8F);
     }
 
     @Override
@@ -135,24 +129,24 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     @Override
     public EnumPlantType getPlantType(@NotNull IBlockAccess world, int x, int y, int z) {
         val part = getPartFromMeta(getPlantMetadata(world, x, y, z));
-        return (part == META_SPROUT || part == META_BOTTOM) ? Plains : typeHeracleum;
+        return (part == META_PART_SPROUT || part == META_PART_BOTTOM) ? Plains : typeHeracleum;
     }
 
     @Override
     public boolean canReplace(World world, int x, int y, int z, int side, @NotNull ItemStack stack) {
         if (stack.getItem() == ModItems.heracleumUmbel)
-            blockMeta.set(META_SPROUT);
+            blockMeta.set(META_PART_SPROUT);
         else if (stack.getItem() == ModItems.heracleumStem) {
             val meta = stack.getItemDamage();
-            val dry = ItemHeracleumStem.isDryFromMeta(meta) ? META_DRY : 0;
+            val dry = ItemHeracleumStem.isDryFromMeta(meta) ? META_BIT_DRY : 0;
             if (world.getBlock(x, y - 1, z) instanceof BlockHeracleum) {
-                if (dry != META_DRY && isDryFromMeta(world.getBlockMetadata(x, y - 1, z)))
+                if (dry != META_BIT_DRY && isDryFromMeta(world.getBlockMetadata(x, y - 1, z)))
                     return false;
                 val part = getPartFromMeta(world.getBlockMetadata(x, y - 1, z));
-                if (part == META_BOTTOM || part == META_MIDDLE)
-                    blockMeta.set(META_MIDDLE | dry);
+                if (part == META_PART_BOTTOM || part == META_PART_MIDDLE)
+                    blockMeta.set(META_PART_MIDDLE | dry);
                 else return false;
-            } else blockMeta.set(META_BOTTOM | dry);
+            } else blockMeta.set(META_PART_BOTTOM | dry);
         } else blockMeta.set(stack.getItemDamage());
         return super.canReplace(world, x, y, z, side, stack);
     }
@@ -198,24 +192,25 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
                                          @Range(from = 0, to = 15) int metadata, int fortune) {
         val result = new ArrayList<ItemStack>();
         if (!harvestedByShearsItem.get()) {
+            val bloom = isBloomingFromMeta(metadata);
             val dry = isDryFromMeta(metadata);
             switch (getPartFromMeta(metadata)) {
-                case META_SPROUT:
-                    if (!dry) result.add(new ItemStack(ModItems.heracleumUmbel, 1));
+                case META_PART_SPROUT:
+                    if (bloom) result.add(new ItemStack(ModItems.heracleumUmbel, 1));
                     break;
-                case META_BOTTOM:
+                case META_PART_BOTTOM:
                     result.add(new ItemStack(ModItems.heracleumStem, 1, dry ? 1 : 0));
                     break;
-                case META_MIDDLE:
+                case META_PART_MIDDLE:
                     result.add(new ItemStack(ModItems.heracleumStem, 1, dry ? 1 : 0));
-                    if (!dry) {
+                    if (bloom) {
                         val count = 1 + world.rand.nextInt(3) + world.rand.nextInt(fortune + 1);
                         for (var i = 0; i < count; i++)
                             result.add(new ItemStack(ModItems.heracleumUmbel, 1));
                     }
                     break;
-                case META_TOP:
-                    if (!dry) {
+                case META_PART_TOP:
+                    if (bloom) {
                         val count = 1 + world.rand.nextInt(6) + world.rand.nextInt(fortune + 1);
                         for (var i = 0; i < count; i++)
                             result.add(new ItemStack(ModItems.heracleumUmbel, 1));
@@ -252,9 +247,9 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
                 return true;
             else if (isDryFromMeta(world.getBlockMetadata(x, y, z)))
                 return false;
-            if (heracleumPart == META_TOP || heracleumPart == META_MIDDLE)
-                return part == META_MIDDLE || part == META_BOTTOM;
-            return (heracleumPart == META_BOTTOM || heracleumPart == META_SPROUT) &&
+            if (heracleumPart == META_PART_TOP || heracleumPart == META_PART_MIDDLE)
+                return part == META_PART_MIDDLE || part == META_PART_BOTTOM;
+            return (heracleumPart == META_PART_BOTTOM || heracleumPart == META_PART_SPROUT) &&
                     super.canSustainPlant(world, x, y, z, direction, plantable);
         }
         return false;
@@ -276,6 +271,10 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     }
 
     public static boolean isDryFromMeta(int meta) {
-        return (meta & META_DRY) == META_DRY;
+        return (meta & META_BIT_DRY) == META_BIT_DRY;
+    }
+
+    public static boolean isBloomingFromMeta(int meta) {
+        return (meta & META_BIT_BLOOM) == META_BIT_BLOOM;
     }
 }

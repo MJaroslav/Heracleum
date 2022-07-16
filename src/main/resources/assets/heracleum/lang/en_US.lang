@@ -6,6 +6,12 @@ tile.heracleum:heracleum.umbels.name=Hogweed Umbels
 tile.heracleum:heracleum.sprout.dry.name=Dry Hogweed Sprout
 tile.heracleum:heracleum.stem.dry.name=Dry Hogweed Stem
 tile.heracleum:heracleum.umbels.dry.name=Dry Hogweed Umbels
+tile.heracleum:heracleum.sprout.blooming.name=Blooming Hogweed Sprout
+tile.heracleum:heracleum.stem.blooming.name=Blooming Hogweed Stem
+tile.heracleum:heracleum.umbels.blooming.name=Blooming Hogweed Umbels
+tile.heracleum:heracleum.sprout.dry.blooming.name=Dry Blooming Hogweed Sprout
+tile.heracleum:heracleum.stem.dry.blooming.name=Dry Blooming Hogweed Stem
+tile.heracleum:heracleum.umbels.dry.blooming.name=Dry Blooming Hogweed Umbels
 
 item.heracleum:heracleum_umbel.name=Hogweed Umbel
 item.heracleum:heracleum_stem.name=Hogweed Stem

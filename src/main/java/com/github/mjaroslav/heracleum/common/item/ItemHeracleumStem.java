@@ -87,8 +87,8 @@ public class ItemHeracleumStem extends ModItemReed {
             return false;
         else if (world.canPlaceEntityOnSide(ModBlocks.heracleum, x, y, z, false, side, null, stack)) {
             val placePart = world.getBlock(x, y - 1, z) == ModBlocks.heracleum
-                    ? BlockHeracleum.META_MIDDLE : BlockHeracleum.META_BOTTOM;
-            val dry = isDryFromMeta(stack.getItemDamage()) ? BlockHeracleum.META_DRY : 0;
+                    ? BlockHeracleum.META_PART_MIDDLE : BlockHeracleum.META_PART_BOTTOM;
+            val dry = isDryFromMeta(stack.getItemDamage()) ? BlockHeracleum.META_BIT_DRY : 0;
             val i1 = ModBlocks.heracleum.onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, placePart | dry);
 
             if (world.setBlock(x, y, z, ModBlocks.heracleum, i1, 3)) {

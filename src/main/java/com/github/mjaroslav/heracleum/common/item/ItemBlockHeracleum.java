@@ -1,10 +1,9 @@
 package com.github.mjaroslav.heracleum.common.item;
 
 import lombok.val;
+import lombok.var;
 import net.minecraft.block.Block;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import static com.github.mjaroslav.heracleum.common.block.BlockHeracleum.*;
@@ -16,18 +15,23 @@ public class ItemBlockHeracleum extends ItemBlockWithMetadata {
 
     @Override
     public String getUnlocalizedName(@NotNull ItemStack stack) {
-        val original = getUnlocalizedName();
+        var result = getUnlocalizedName();
         val part = getPartFromMeta(stack.getItemDamage());
+        val dry = isDryFromMeta(stack.getItemDamage());
         switch (part) {
             case META_SPROUT:
-                return original + ".sprout";
+                result += ".sprout";
+                break;
             case META_MIDDLE:
             case META_BOTTOM:
-                return original + ".stem";
+                result += ".stem";
+                break;
             case META_TOP:
-                return original + ".umbels";
-            default:
-                return original;
+                result += ".umbels";
+                break;
         }
+        if (dry)
+            result += ".dry";
+        return result;
     }
 }

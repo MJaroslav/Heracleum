@@ -3,5 +3,10 @@ itemGroup.heracleum=Heracleum
 tile.heracleum:heracleum.sprout.name=Побег Борщевика
 tile.heracleum:heracleum.stem.name=Стебель Борщевика
 tile.heracleum:heracleum.umbels.name=Зонтики Борщевика
+tile.heracleum:heracleum.sprout.dry.name=Сухой Побег Борщевика
+tile.heracleum:heracleum.stem.dry.name=Сухой Стебель Борщевика
+tile.heracleum:heracleum.umbels.dry.name=Сухие Зонтики Борщевика
 
 item.heracleum:heracleum_umbel.name=Зонтик Борщевика
+item.heracleum:heracleum_stem.name=Стебель Борщевика
+item.heracleum:heracleum_stem.dry.name=Сухой Стебель Борщевика

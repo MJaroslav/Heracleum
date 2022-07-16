@@ -34,22 +34,27 @@ public final class RenderTileEntityHeracleum extends TileEntitySpecialRenderer {
         val brightness = tile.getBlockType().getMixedBrightnessForBlock(tile.getWorldObj(), tile.xCoord, tile.yCoord,
                 tile.zCoord);
         val color = tile.getBlockType().colorMultiplier(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
+        val dry = BlockHeracleum.isDryFromMeta(tile.getBlockMetadata());
         switch (getPartFromMeta(tile.getBlockMetadata())) {
             case META_BOTTOM:
                 renderPart(t, "bottom", brightness, color);
-                renderPart(t, "bottomOverlay", brightness, 0xFFFFFF);
+                if (!dry)
+                    renderPart(t, "bottomOverlay", brightness, 0xFFFFFF);
                 break;
             case META_MIDDLE:
                 renderPart(t, "middle", brightness, color);
-                renderPart(t, "middleOverlay", brightness, 0xFFFFFF);
+                if (!dry)
+                    renderPart(t, "middleOverlay", brightness, 0xFFFFFF);
                 break;
             case META_TOP:
                 renderPart(t, "top", brightness, color);
-                renderPart(t, "topOverlay", brightness, 0xFFFFFF);
+                if (!dry)
+                    renderPart(t, "topOverlay", brightness, 0xFFFFFF);
                 break;
             case META_SPROUT:
                 renderPart(t, "sprout", brightness, color);
-                renderPart(t, "sproutOverlay", brightness, 0xFFFFFF);
+                if (!dry)
+                    renderPart(t, "sproutOverlay", brightness, 0xFFFFFF);
                 break;
         }
         glEnable(GL_CULL_FACE);

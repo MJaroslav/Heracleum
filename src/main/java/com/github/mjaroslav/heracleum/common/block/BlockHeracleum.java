@@ -178,13 +178,38 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
             return;
         if (tryGrowth(world, x, y, z, rand))
             return;
+        trySpread(world, x, y, z, rand);
     }
 
 
+    protected void trySpread(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
+        val meta = world.getBlockMetadata(x, y, z);
+        if (!isBloomingFromMeta(meta) || getPartFromMeta(meta) != META_PART_TOP)
+            return;
+        var newX = x + rand.nextInt(61) - 30;
+        var newZ = z + rand.nextInt(61) - 30;
+        var newY = world.getPrecipitationHeight(newX, newZ) ;//+ 1;
+//        for (var noise = 0; noise < 4; noise++) {
+//            blockMeta.set(0);
+//            if (world.isAirBlock(newX, newY, newZ) && canBlockStay(world, newX, newY, newZ)) {
+//                x = newX;
+//                y = newY;
+//                z = newZ;
+//            }
+//            newX = x + rand.nextInt(3) - 1;
+//            newZ = z + rand.nextInt(3) - 1;
+//            newY = world.getPrecipitationHeight(x, y) + 1;
+//        }
+        blockMeta.set(0);
+        if (world.isAirBlock(newX, newY, newZ) && canBlockStay(world, newX, newY, newZ))
+            world.setBlock(newX, newY, newZ, this, META_PART_SPROUT, 2);
+    }
+
     // TODO: Fix this
     protected boolean tryGrowth(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
-        if (!world.isAirBlock(x, y + 1, z))
-            return false;
+        var height = 1;
+        for (; world.getBlock(x, y - height, z) == this; height++) ;
+        val canGrowthUp = world.isAirBlock(x, y + 1, z) && height < 4;
         val meta = world.getBlockMetadata(x, y, z);
         if (isDryFromMeta(meta))
             return false;
@@ -193,7 +218,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         var newMeta = META_PART_SPROUT;
         switch (part) {
             case META_PART_SPROUT:
-                newMeta = META_PART_BOTTOM;
+                newMeta = blooming ? META_PART_BOTTOM : META_PART_SPROUT;
                 break;
             case META_PART_BOTTOM:
                 newMeta = META_PART_BOTTOM;
@@ -206,8 +231,10 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
                 break;
         }
         if (blooming) {
+            if (!canGrowthUp)
+                return false;
             world.setBlockMetadataWithNotify(x, y, z, newMeta | META_BIT_BLOOM, 2);
-            world.setBlock(x, y + 1, z, this, META_PART_TOP, 4);
+            world.setBlock(x, y + 1, z, this, META_PART_TOP, 2);
         } else world.setBlockMetadataWithNotify(x, y, z, newMeta | META_BIT_BLOOM, 2);
         return true;
     }

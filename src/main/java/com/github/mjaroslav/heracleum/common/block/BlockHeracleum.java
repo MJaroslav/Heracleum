@@ -4,6 +4,7 @@ import com.github.mjaroslav.heracleum.common.init.ModItems;
 import com.github.mjaroslav.heracleum.common.item.ItemBlockHeracleum;
 import com.github.mjaroslav.heracleum.common.item.ItemHeracleumStem;
 import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
+import com.github.mjaroslav.heracleum.lib.CategoryGeneral.CategoryPlantParameters;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -172,44 +173,48 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         checkAndDropBlock(world, x, y, z);
     }
 
+    // Average call time is 68.27 seconds
     @Override
     public void updateTick(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
         if (checkAndDropBlock(world, x, y, z))
             return;
-        if (tryGrowth(world, x, y, z, rand))
-            return;
-        trySpread(world, x, y, z, rand);
+        if (CategoryPlantParameters.canGrowth)
+            if (tryGrowth(world, x, y, z, rand) && !CategoryPlantParameters.canSpreadAfterGrowth)
+                return;
+        if (CategoryPlantParameters.canSpread)
+            trySpread(world, x, y, z, rand);
     }
 
 
     protected void trySpread(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
         val meta = world.getBlockMetadata(x, y, z);
-        if (!isBloomingFromMeta(meta) || getPartFromMeta(meta) != META_PART_TOP)
+        if (!isBloomingFromMeta(meta))
             return;
-        var newX = x + rand.nextInt(61) - 30;
-        var newZ = z + rand.nextInt(61) - 30;
-        var newY = world.getPrecipitationHeight(newX, newZ) ;//+ 1;
-//        for (var noise = 0; noise < 4; noise++) {
-//            blockMeta.set(0);
-//            if (world.isAirBlock(newX, newY, newZ) && canBlockStay(world, newX, newY, newZ)) {
-//                x = newX;
-//                y = newY;
-//                z = newZ;
-//            }
-//            newX = x + rand.nextInt(3) - 1;
-//            newZ = z + rand.nextInt(3) - 1;
-//            newY = world.getPrecipitationHeight(x, y) + 1;
-//        }
+        val part = getPartFromMeta(meta);
+        val radius = part == META_PART_TOP ? CategoryPlantParameters.spreadRadiusTop :
+                part == META_PART_MIDDLE ? CategoryPlantParameters.spreadRadiusMiddle :
+                        CategoryPlantParameters.spreadRadiusBottom;
+        x += rand.nextInt(radius * 2 + 1) - radius;
+        z += rand.nextInt(radius * 2 + 1) - radius;
+        var X = x;
+        var Z = z;
+        y = world.getPrecipitationHeight(X, Z);
         blockMeta.set(0);
-        if (world.isAirBlock(newX, newY, newZ) && canBlockStay(world, newX, newY, newZ))
-            world.setBlock(newX, newY, newZ, this, META_PART_SPROUT, 2);
+        for (var attempt = 0; attempt < 5; attempt++) {
+            if (world.isAirBlock(X, y, Z) && canBlockStay(world, X, y, Z))
+                break;
+            X = x + rand.nextInt(5) - 2;
+            Z = z + rand.nextInt(5) - 2;
+            y = world.getPrecipitationHeight(X, Z) + 1;
+        }
+        if (world.isAirBlock(X, y, Z) && canBlockStay(world, X, y, Z))
+            world.setBlock(X, y, Z, this, META_PART_SPROUT, 2);
     }
 
-    // TODO: Fix this
     protected boolean tryGrowth(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
         var height = 1;
         for (; world.getBlock(x, y - height, z) == this; height++) ;
-        val canGrowthUp = world.isAirBlock(x, y + 1, z) && height < 4;
+        val canGrowthUp = world.isAirBlock(x, y + 1, z) && height < CategoryPlantParameters.maxGrowthHeight;
         val meta = world.getBlockMetadata(x, y, z);
         if (isDryFromMeta(meta))
             return false;

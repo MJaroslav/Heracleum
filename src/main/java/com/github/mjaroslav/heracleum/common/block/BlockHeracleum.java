@@ -1,5 +1,6 @@
 package com.github.mjaroslav.heracleum.common.block;
 
+import com.github.mjaroslav.heracleum.client.ClientProxy;
 import com.github.mjaroslav.heracleum.common.init.ModItems;
 import com.github.mjaroslav.heracleum.common.item.ItemBlockHeracleum;
 import com.github.mjaroslav.heracleum.common.item.ItemHeracleumStem;
@@ -33,9 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
 import static net.minecraftforge.common.EnumPlantType.Plains;
 
-public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> implements IPlantable, IShearable {
+public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     public static final EnumPlantType typeHeracleum = EnumHelper.addEnum(EnumPlantType.class, "Heracleum",
             new Class<?>[0], new Object[0]);
 
@@ -53,9 +55,7 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
     private final ThreadLocal<Integer> blockMeta = ThreadLocal.withInitial(() -> 0);
 
     public BlockHeracleum() {
-        super("heracleum", Material.plants, TileEntityHeracleum.class, ItemBlockHeracleum.class);
-        // TODO: Add ItemBlock icon or model
-        setBlockTextureName("minecraft:tallgrass");
+        super("heracleum", Material.plants, ItemBlockHeracleum.class);
         setStepSound(Block.soundTypeGrass);
         setTickRandomly(true);
     }
@@ -95,9 +95,10 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         return isDryFromMeta(world.getBlockMetadata(x, y, z)) ? COLOR_DRY : world.getBiomeGenForCoords(x, z).getBiomeGrassColor(x, y, z);
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public int getRenderType() {
-        return -1;
+        return ClientProxy.heracleumRenderId;
     }
 
     @Override
@@ -110,10 +111,10 @@ public class BlockHeracleum extends ModBlockContainer<TileEntityHeracleum> imple
         return false;
     }
 
-    @Override
-    public TileEntityHeracleum createNewTileEntity(@NotNull World world, @Range(from = 0, to = 15) int metadata) {
-        return new TileEntityHeracleum();
-    }
+//    @Override
+//    public TileEntityHeracleum createNewTileEntity(@NotNull World world, @Range(from = 0, to = 15) int metadata) {
+//        return new TileEntityHeracleum();
+//    }
 
     @SideOnly(Side.CLIENT)
     @Override

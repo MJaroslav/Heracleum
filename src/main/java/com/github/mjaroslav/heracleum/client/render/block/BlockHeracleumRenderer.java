@@ -1,21 +1,16 @@
 package com.github.mjaroslav.heracleum.client.render.block;
 
-import com.github.mjaroslav.heracleum.client.render.model.ModelWrapperDisplayList;
-import com.github.mjaroslav.heracleum.client.render.model.WavefrontObjectUtils;
+import com.github.mjaroslav.heracleum.client.ClientProxy;
+import com.github.mjaroslav.heracleum.client.render.model.obj.IconScaledWavefrontObject;
+import com.github.mjaroslav.heracleum.common.init.ModBlocks;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.val;
-import lombok.var;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.client.model.AdvancedModelLoader;
-import net.minecraftforge.client.model.IModelCustom;
-import net.minecraftforge.client.model.obj.WavefrontObject;
 import org.jetbrains.annotations.NotNull;
 
 import static com.github.mjaroslav.heracleum.common.block.BlockHeracleum.*;
@@ -23,10 +18,7 @@ import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
 
 public class BlockHeracleumRenderer implements ISimpleBlockRenderingHandler {
     public static final ResourceLocation texture = new ResourceLocation(prefix("textures/models/blocks/heracleum.png"));
-    protected static WavefrontObject wavefront = (WavefrontObject) AdvancedModelLoader
-            .loadModel(new ResourceLocation(prefix("models/blocks/heracleum.obj")));
-    public static final IModelCustom model = new ModelWrapperDisplayList(wavefront);
-    protected final IconHolder holder = new IconHolder();
+    public static final IconScaledWavefrontObject model = new IconScaledWavefrontObject(new ResourceLocation(prefix("models/blocks/heracleum.obj")));
 
     @Override
     public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
@@ -35,42 +27,84 @@ public class BlockHeracleumRenderer implements ISimpleBlockRenderingHandler {
 
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, @NotNull Block block, int modelId, RenderBlocks renderer) {
-        val icon = block.getIcon(0, 0);
-        if (!holder.isFit(icon)) {
-            wavefront = (WavefrontObject) AdvancedModelLoader
-                    .loadModel(new ResourceLocation(prefix("models/blocks/heracleum.obj")));
-            WavefrontObjectUtils.fitToHeracleumIcon(wavefront, icon);
-        }
+        val meta = world.getBlockMetadata(x, y, z);
+        val icon = ModBlocks.heracleum.getIcon(meta, false);
+        val iconOverlay = ModBlocks.heracleum.getIcon(meta, true);
         val tessellator = Tessellator.instance;
         tessellator.addTranslation(x + 0.5f, y, z + 0.5f);
         val color = block.colorMultiplier(world, x, y, z);
         val brightness = block.getMixedBrightnessForBlock(world, x, y, z);
-        val meta = world.getBlockMetadata(x, y, z);
         tessellator.setColorOpaque_I(color);
         tessellator.setBrightness(brightness);
         val blooming = isBloomingFromMeta(meta);
         switch (getPartFromMeta(meta)) {
             case META_PART_BOTTOM:
-                renderPart(tessellator, "bottom", color, blooming);
-                break;
             case META_PART_MIDDLE:
-                renderPart(tessellator, "middle", color, blooming);
+                renderStemPart(world, block, x, y, z, icon, iconOverlay, blooming, tessellator);
                 break;
             case META_PART_TOP:
-                renderPart(tessellator, "top", color, blooming);
+                renderTopPart(world, block, x, y, z, icon, iconOverlay, blooming, tessellator);
                 break;
             case META_PART_SPROUT:
-                renderPart(tessellator, "sprout", color, blooming);
+                renderSproutPart(world, block, x, y, z, icon, iconOverlay, blooming, tessellator);
                 break;
         }
         tessellator.addTranslation(-(x + 0.5f), -y, -(z + 0.5f));
         return true;
     }
 
-    private void renderPart(@NotNull Tessellator tessellator, @NotNull String name, int color, boolean blooming) {
-        wavefront.tessellatePart(tessellator, name);
-        if (blooming)
-            wavefront.tessellatePart(tessellator, name + "Overlay");
+    private void renderTopPart(@NotNull IBlockAccess world, @NotNull Block block, int x, int y, int z,
+                               @NotNull IIcon icon, @NotNull IIcon iconOverlay, boolean blooming,
+                               @NotNull Tessellator tessellator) {
+        val flagTop = block.shouldSideBeRendered(world, x, y, z, 1);
+        if (flagTop)
+            model.tessellatePart(icon, tessellator, "stemTopBottom");
+        model.tessellatePart(icon, tessellator, "cross");
+        if (blooming) {
+            tessellator.setColorOpaque_I(0xFFFFFF);
+            if (flagTop)
+                model.tessellatePart(iconOverlay, tessellator, "stemTopBottom");
+            model.tessellatePart(iconOverlay, tessellator, "cross");
+        }
+    }
+
+    private void renderSproutPart(@NotNull IBlockAccess world, @NotNull Block block, int x, int y, int z,
+                                  @NotNull IIcon icon, @NotNull IIcon iconOverlay, boolean blooming,
+                                  @NotNull Tessellator tessellator) {
+        val flagBottom = block.shouldSideBeRendered(world, x, y, z, 0);
+        if (flagBottom)
+            model.tessellatePart(icon, tessellator, "smallStemBottom");
+        model.tessellatePart(icon, tessellator, "smallStem");
+        model.tessellatePart(icon, tessellator, "cross");
+        if (blooming) {
+            tessellator.setColorOpaque_I(0xFFFFFF);
+            if (flagBottom)
+                model.tessellatePart(iconOverlay, tessellator, "smallStemBottom");
+            model.tessellatePart(iconOverlay, tessellator, "smallStem");
+            model.tessellatePart(iconOverlay, tessellator, "cross");
+        }
+    }
+
+    private void renderStemPart(@NotNull IBlockAccess world, @NotNull Block block, int x, int y, int z,
+                                @NotNull IIcon icon, @NotNull IIcon iconOverlay, boolean blooming,
+                                @NotNull Tessellator tessellator) {
+        val flagBottom = block.shouldSideBeRendered(world, x, y, z, 0);
+        val flagTop = block.shouldSideBeRendered(world, x, y, z, 1);
+        if (flagBottom)
+            model.tessellatePart(icon, tessellator, "stemBottom");
+        if (flagTop)
+            model.tessellatePart(icon, tessellator, "stemTop");
+        model.tessellatePart(icon, tessellator, "stem");
+        model.tessellatePart(icon, tessellator, "cross");
+        if (blooming) {
+            tessellator.setColorOpaque_I(0xFFFFFF);
+            if (flagBottom)
+                model.tessellatePart(iconOverlay, tessellator, "stemBottom");
+            if (flagTop)
+                model.tessellatePart(iconOverlay, tessellator, "stemTop");
+            model.tessellatePart(iconOverlay, tessellator, "stem");
+            model.tessellatePart(iconOverlay, tessellator, "cross");
+        }
     }
 
     @Override
@@ -80,58 +114,6 @@ public class BlockHeracleumRenderer implements ISimpleBlockRenderingHandler {
 
     @Override
     public int getRenderId() {
-        return 0;
-    }
-
-    @Getter
-    @NoArgsConstructor
-    private static class IconHolder implements IIcon {
-        private int iconWidth, iconHeight;
-        private float minU, maxU, minV, maxV;
-
-//        public IconHolder(@NotNull IIcon icon) {
-//            iconWidth = icon.getIconWidth();
-//            iconHeight = icon.getIconHeight();
-//            minU = icon.getMinU();
-//            maxU = icon.getMaxU();
-//            minV = icon.getMinV();
-//            maxV = icon.getMaxV();
-//        }
-
-        @Override
-        public float getInterpolatedU(double u) {
-            return 0;
-        }
-
-        @Override
-        public float getInterpolatedV(double v) {
-            return 0;
-        }
-
-        @Override
-        public String getIconName() {
-            return null;
-        }
-
-        public boolean isFit(@NotNull IIcon icon) {
-            var result = iconWidth == icon.getIconWidth();
-            iconWidth = icon.getIconWidth();
-            if (iconHeight != icon.getIconHeight())
-                result = false;
-            iconHeight = icon.getIconHeight();
-            if (minU != icon.getMinU())
-                result = false;
-            minU = icon.getMinU();
-            if (maxU != icon.getMaxU())
-                result = false;
-            maxU = icon.getMaxU();
-            if (minV != icon.getMinV())
-                result = false;
-            minV = icon.getMinV();
-            if (maxV != icon.getMaxV())
-                result = false;
-            maxV = icon.getMaxV();
-            return result;
-        }
+        return ClientProxy.heracleumRenderId;
     }
 }

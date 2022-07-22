@@ -4,7 +4,6 @@ import com.github.mjaroslav.heracleum.client.ClientProxy;
 import com.github.mjaroslav.heracleum.common.init.ModItems;
 import com.github.mjaroslav.heracleum.common.item.ItemBlockHeracleum;
 import com.github.mjaroslav.heracleum.common.item.ItemHeracleumStem;
-import com.github.mjaroslav.heracleum.common.tileentity.TileEntityHeracleum;
 import com.github.mjaroslav.heracleum.lib.CategoryGeneral.CategoryPlantParameters;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
@@ -13,11 +12,13 @@ import lombok.val;
 import lombok.var;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.ColorizerGrass;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -34,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
 import static net.minecraftforge.common.EnumPlantType.Plains;
 
 public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
@@ -58,6 +58,55 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
         super("heracleum", Material.plants, ItemBlockHeracleum.class);
         setStepSound(Block.soundTypeGrass);
         setTickRandomly(true);
+    }
+
+    @SideOnly(Side.CLIENT)
+    private final IIcon[] icons = new IIcon[8];
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void registerBlockIcons(@NotNull IIconRegister register) {
+        val base = getTextureName() + "/heracleum_";
+        icons[META_PART_SPROUT] = register.registerIcon(base + "sprout");
+        icons[META_PART_SPROUT | 0b100] = register.registerIcon(base + "sprout_overlay");
+        icons[META_PART_BOTTOM] = register.registerIcon(base + "bottom");
+        icons[META_PART_BOTTOM | 0b100] = register.registerIcon(base + "bottom_overlay");
+        icons[META_PART_MIDDLE] = register.registerIcon(base + "middle");
+        icons[META_PART_MIDDLE | 0b100] = register.registerIcon(base + "middle_overlay");
+        icons[META_PART_TOP] = register.registerIcon(base + "top");
+        icons[META_PART_TOP | 0b100] = register.registerIcon(base + "top_overlay");
+    }
+
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(int meta, boolean overlay) {
+        val part = getPartFromMeta(meta);
+        return icons[getPartFromMeta(meta) | (overlay ? 0b100 : 0)];
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public IIcon getIcon(int side, int meta) {
+        return getIcon(meta, false);
+    }
+
+    @Override
+    public boolean shouldSideBeRendered(@NotNull IBlockAccess world, int x, int y, int z,
+                                        @Range(from = 0, to = 6) int side) {
+        val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
+        if (side == 0) { // DOWN
+            if ((part != META_PART_TOP) && world.getBlock(x, y - 1, z) == this) {
+                val anotherPart = getPartFromMeta(world.getBlockMetadata(x, y - 1, z));
+                return !(anotherPart == META_PART_BOTTOM ||
+                        anotherPart == META_PART_MIDDLE) || super.shouldSideBeRendered(world, x, y, z, 0);
+            }
+        } else if (side == 1) // UP
+            if ((part == META_PART_TOP || part != META_PART_SPROUT) && world.getBlock(x, y + (part == META_PART_TOP ? -1 : 1), z) == this) {
+                val anotherPart = getPartFromMeta(world.getBlockMetadata(x, y + (part == META_PART_TOP ? -1 : 1), z));
+                return !(anotherPart == META_PART_BOTTOM ||
+                        anotherPart == META_PART_MIDDLE) ||
+                        super.shouldSideBeRendered(world, x, y, z, part == META_PART_TOP ? 0 : 1);
+            }
+        return super.shouldSideBeRendered(world, x, y, z, side);
     }
 
     @SideOnly(Side.CLIENT)

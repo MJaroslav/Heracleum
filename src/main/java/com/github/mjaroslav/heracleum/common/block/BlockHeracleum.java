@@ -28,6 +28,7 @@ import net.minecraftforge.common.IShearable;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -40,7 +41,6 @@ import static net.minecraftforge.common.EnumPlantType.Plains;
 public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     public static final EnumPlantType typeHeracleum = EnumHelper.addEnum(EnumPlantType.class, "Heracleum",
             new Class<?>[0], new Object[0]);
-
 
     public static final int COLOR_DRY = 0xB5B54A;
 
@@ -94,18 +94,21 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
                                         @Range(from = 0, to = 6) int side) {
         val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
         if (side == 0) { // DOWN
-            if ((part != META_PART_TOP) && world.getBlock(x, y - 1, z) == this) {
+            if (part != META_PART_TOP && world.getBlock(x, y - 1, z) == this) {
                 val anotherPart = getPartFromMeta(world.getBlockMetadata(x, y - 1, z));
-                return !(anotherPart == META_PART_BOTTOM ||
-                        anotherPart == META_PART_MIDDLE) || super.shouldSideBeRendered(world, x, y, z, 0);
+                return anotherPart == META_PART_TOP || anotherPart == META_PART_SPROUT;
             }
         } else if (side == 1) // UP
-            if ((part == META_PART_TOP || part != META_PART_SPROUT) && world.getBlock(x, y + (part == META_PART_TOP ? -1 : 1), z) == this) {
-                val anotherPart = getPartFromMeta(world.getBlockMetadata(x, y + (part == META_PART_TOP ? -1 : 1), z));
-                return !(anotherPart == META_PART_BOTTOM ||
-                        anotherPart == META_PART_MIDDLE) ||
-                        super.shouldSideBeRendered(world, x, y, z, part == META_PART_TOP ? 0 : 1);
-            }
+            if (part == META_PART_TOP) {
+                if (world.getBlock(x, y - 1, z) == this) {
+                    val anotherPart = getPartFromMeta(world.getBlockMetadata(x, y - 1, z));
+                    return anotherPart == META_PART_BOTTOM || anotherPart == META_PART_MIDDLE;
+                } else return false;
+            } else if (part != META_PART_SPROUT)
+                if (world.getBlock(x, y + 1, z) == this) {
+                    val anotherPart = getPartFromMeta(world.getBlockMetadata(x, y + 1, z));
+                    return anotherPart == META_PART_SPROUT || anotherPart == META_PART_BOTTOM;
+                }
         return super.shouldSideBeRendered(world, x, y, z, side);
     }
 
@@ -117,20 +120,21 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     }
 
     @Override
-    public void addCollisionBoxesToList(@NotNull World world, int x, int y, int z, @NotNull AxisAlignedBB bb,
-                                        @NotNull List list, @UnknownNullability Entity entity) {
+    public void addCollisionBoxesToList(@NotNull World world, int x, int y, int z, @NotNull AxisAlignedBB mask,
+                                        @NotNull List list, @Nullable Entity entity) {
         val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
-        if (part != META_PART_SPROUT)
-            setBlockBounds(0.5F - 1F / 16F, 0F, 0.5F - 1F / 16F, 0.5F + 1F / 16F, part == META_PART_TOP ? 0F : 1F, 0.5F + 1F / 16F);
-        else
-            setBlockBounds(0.5F - 0.5F / 16F, 0F, 0.5F - 0.5F / 16F, 0.5F + 0.5F / 16F, 0.5F, 0.5F + 0.5F / 16F);
-        super.addCollisionBoxesToList(world, x, y, z, bb, list, entity);
+        if (part != META_PART_SPROUT && part != META_PART_TOP) {
+            setBlockBounds(0.375F, 0F, 0.375F, 0.625F, 1F, 0.625F);
+            super.addCollisionBoxesToList(world, x, y, z, mask, list, entity);
+        }
+        setBlockBounds(0.2F, 0, 0.2F, 0.8F, getPartFromMeta(world.getBlockMetadata(x, y, z)) == META_PART_SPROUT ? 0.5F
+                : 1F, 0.8F);
     }
 
     @Override
     public void setBlockBoundsBasedOnState(@NotNull IBlockAccess world, int x, int y, int z) {
-        val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
-        setBlockBounds(0.2F, 0, 0.2F, 0.8F, part != META_PART_SPROUT ? 1F : 0.5F, 0.8F);
+        setBlockBounds(0.2F, 0, 0.2F, 0.8F, getPartFromMeta(world.getBlockMetadata(x, y, z)) == META_PART_SPROUT ? 0.5F
+                : 1F, 0.8F);
     }
 
     @Override
@@ -159,11 +163,6 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     public boolean renderAsNormalBlock() {
         return false;
     }
-
-//    @Override
-//    public TileEntityHeracleum createNewTileEntity(@NotNull World world, @Range(from = 0, to = 15) int metadata) {
-//        return new TileEntityHeracleum();
-//    }
 
     @SideOnly(Side.CLIENT)
     @Override
@@ -229,12 +228,13 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
         if (checkAndDropBlock(world, x, y, z))
             return;
         if (CategoryPlantParameters.canGrowth)
-            if (tryGrowth(world, x, y, z, rand) && !CategoryPlantParameters.canSpreadAfterGrowth)
+            if (rand.nextInt(101) <= CategoryPlantParameters.growthChance && tryGrowth(world, x, y, z, rand)
+                    && !CategoryPlantParameters.canSpreadAfterGrowth)
                 return;
         if (CategoryPlantParameters.canSpread)
-            trySpread(world, x, y, z, rand);
+            if (rand.nextInt(101) <= CategoryPlantParameters.spreadChance)
+                trySpread(world, x, y, z, rand);
     }
-
 
     protected void trySpread(@NotNull World world, int x, int y, int z, @NotNull Random rand) {
         val meta = world.getBlockMetadata(x, y, z);
@@ -344,7 +344,7 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
 
     protected boolean checkAndDropBlock(@NotNull World world, int x, int y, int z) {
         if (!canBlockStay(world, x, y, z)) {
-            dropBlockAsItem(world, x, y, z, getPartFromMeta(world.getBlockMetadata(x, y, z)), 0);
+            dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
             world.setBlockToAir(x, y, z);
             return true;
         }

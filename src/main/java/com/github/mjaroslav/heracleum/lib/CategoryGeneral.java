@@ -28,5 +28,11 @@ public class CategoryGeneral {
 
         @ConfigurationProperty(comment = "Max plant height", defaultInt = 4, minInt = 1, maxInt = 256)
         public static int maxGrowthHeight;
+
+        @ConfigurationProperty(comment = "Chance in percent for plant growth", defaultInt = 30, minInt = 1, maxInt = 100)
+        public static int growthChance;
+
+        @ConfigurationProperty(comment = "Chance in percent for plant spread", defaultInt = 10, minInt = 1, maxInt = 100)
+        public static int spreadChance;
     }
 }

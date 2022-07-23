@@ -15,18 +15,47 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.github.mjaroslav.heracleum.common.block.BlockHeracleum.*;
 import static com.github.mjaroslav.heracleum.lib.ModInfo.prefix;
+import static org.lwjgl.opengl.GL11.*;
 
 public class BlockHeracleumRenderer implements ISimpleBlockRenderingHandler {
-    public static final ResourceLocation texture = new ResourceLocation(prefix("textures/models/blocks/heracleum.png"));
     public static final IconScaledWavefrontObject model = new IconScaledWavefrontObject(new ResourceLocation(prefix("models/blocks/heracleum.obj")));
 
     @Override
-    public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
+    public void renderInventoryBlock(@NotNull Block block, int damage, int modelId, @NotNull RenderBlocks renderer) {
+        val tessellator = Tessellator.instance;
+        val part = getPartFromMeta(damage);
+        glPushMatrix();
+        glTranslated(0, -0.5, 0);
+        tessellator.startDrawingQuads();
+        tessellator.setColorOpaque_I(block.getRenderColor(damage));
+        renderPartForItem(part, ModBlocks.heracleum.getIcon(damage, false), tessellator);
+        if (isBloomingFromMeta(damage)) {
+            tessellator.setColorOpaque_I(0xFFFFFF);
+            renderPartForItem(part, ModBlocks.heracleum.getIcon(damage, true), tessellator);
+        }
+        tessellator.draw();
+        glPopMatrix();
+    }
 
+    private void renderPartForItem(int part, @NotNull IIcon icon, @NotNull Tessellator tessellator) {
+        switch (part) {
+            case META_PART_SPROUT:
+                model.tessellatePart(icon, tessellator, "smallStem");
+                model.tessellatePart(icon, tessellator, "smallStemBottom");
+                break;
+            case META_PART_BOTTOM:
+            case META_PART_MIDDLE:
+                model.tessellatePart(icon, tessellator, "stem");
+                model.tessellatePart(icon, tessellator, "stemTop");
+                model.tessellatePart(icon, tessellator, "stemBottom");
+                break;
+        }
+        model.tessellatePart(icon, tessellator, "cross");
     }
 
     @Override
-    public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, @NotNull Block block, int modelId, RenderBlocks renderer) {
+    public boolean renderWorldBlock(@NotNull IBlockAccess world, int x, int y, int z, @NotNull Block block, int modelId,
+                                    @NotNull RenderBlocks renderer) {
         val meta = world.getBlockMetadata(x, y, z);
         val icon = ModBlocks.heracleum.getIcon(meta, false);
         val iconOverlay = ModBlocks.heracleum.getIcon(meta, true);
@@ -109,7 +138,7 @@ public class BlockHeracleumRenderer implements ISimpleBlockRenderingHandler {
 
     @Override
     public boolean shouldRender3DInInventory(int modelId) {
-        return false;
+        return true;
     }
 
     @Override

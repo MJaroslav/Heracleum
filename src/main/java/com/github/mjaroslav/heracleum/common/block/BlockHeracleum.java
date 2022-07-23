@@ -173,7 +173,7 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     @SideOnly(Side.CLIENT)
     @Override
     public int getRenderColor(@Range(from = 0, to = 15) int meta) {
-        return getBlockColor();
+        return isDryFromMeta(meta) ? COLOR_DRY : getBlockColor();
     }
 
     @Override

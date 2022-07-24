@@ -8,6 +8,7 @@ public final class ModInfo {
     public static final String MOD_ID = "heracleum";
     public static final String NAME = "Heracleum";
     public static final String VERSION = "@VERSION@";
+    public static final String DEPENDENCIES = "required-after:mjutils@[1.6,);";
     public static final String GUI_FACTORY = "com.github.mjaroslav.heracleum.client.gui.ModGuiFactory";
     public static final String CLIENT_PROXY = "com.github.mjaroslav.heracleum.client.ClientProxy";
     public static final String COMMON_PROXY = "com.github.mjaroslav.heracleum.common.CommonProxy";

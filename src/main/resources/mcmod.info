@@ -2,15 +2,15 @@
 {
   "modid": "heracleum",
   "name": "Heracleum",
-  "description": "Modification, adding to the game heracleum.",
+  "description": "Immerse your world in the chaos of hogweed!",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "https://www.curseforge.com/minecraft/mc-mods/heracleum",
   "updateUrl": "",
   "authorList": ["MJaroslav"],
   "credits": "",
-  "logoFile": "",
+  "logoFile": "assets/heracleum/logo.png",
   "screenshots": [],
-  "dependencies": []
+  "dependencies": ["mjutils@[1.6,)"]
 }
 ]

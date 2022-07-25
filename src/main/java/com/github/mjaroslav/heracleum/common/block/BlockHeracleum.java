@@ -4,6 +4,7 @@ import com.github.mjaroslav.heracleum.client.ClientProxy;
 import com.github.mjaroslav.heracleum.common.init.ModItems;
 import com.github.mjaroslav.heracleum.common.item.ItemBlockHeracleum;
 import com.github.mjaroslav.heracleum.common.item.ItemHeracleumStem;
+import com.github.mjaroslav.heracleum.lib.CategoryGeneral.CategoryClient;
 import com.github.mjaroslav.heracleum.lib.CategoryGeneral.CategoryPlantParameters;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
@@ -41,8 +42,6 @@ import static net.minecraftforge.common.EnumPlantType.Plains;
 public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     public static final EnumPlantType typeHeracleum = EnumHelper.addEnum(EnumPlantType.class, "Heracleum",
             new Class<?>[0], new Object[0]);
-
-    public static final int COLOR_DRY = 0xB5B54A;
 
     public static final int META_PART_SPROUT = 0b0000;
     public static final int META_PART_BOTTOM = 0b0001;
@@ -145,7 +144,8 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     @SideOnly(Side.CLIENT)
     @Override
     public int colorMultiplier(@NotNull IBlockAccess world, int x, int y, int z) {
-        return isDryFromMeta(world.getBlockMetadata(x, y, z)) ? COLOR_DRY : world.getBiomeGenForCoords(x, z).getBiomeGrassColor(x, y, z);
+        return isDryFromMeta(world.getBlockMetadata(x, y, z)) ? CategoryClient.parseDryHeracleumColor()
+                : world.getBiomeGenForCoords(x, z).getBiomeGrassColor(x, y, z);
     }
 
     @SideOnly(Side.CLIENT)
@@ -173,7 +173,7 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
     @SideOnly(Side.CLIENT)
     @Override
     public int getRenderColor(@Range(from = 0, to = 15) int meta) {
-        return isDryFromMeta(meta) ? COLOR_DRY : getBlockColor();
+        return isDryFromMeta(meta) ? CategoryClient.parseDryHeracleumColor() : getBlockColor();
     }
 
     @Override
@@ -296,8 +296,6 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
 
     @Override
     public boolean canBlockStay(@NotNull World world, int x, int y, int z) {
-        if (isDryFromMeta(world.isAirBlock(x, y, z) ? blockMeta.get() : world.getBlockMetadata(x, y, z)))
-            return true;
         val block = world.getBlock(x, y - 1, z);
         return block.canSustainPlant(world, x, y - 1, z, ForgeDirection.UP, this);
     }
@@ -358,10 +356,6 @@ public class BlockHeracleum extends ModBlock implements IPlantable, IShearable {
             val part = getPartFromMeta(world.getBlockMetadata(x, y, z));
             val heracleumMeta = plantable.getPlantMetadata(world, x, y + 1, z);
             val heracleumPart = getPartFromMeta(heracleumMeta);
-            if (isDryFromMeta(heracleumMeta))
-                return true;
-            else if (isDryFromMeta(world.getBlockMetadata(x, y, z)))
-                return false;
             if (heracleumPart == META_PART_TOP || heracleumPart == META_PART_MIDDLE)
                 return part == META_PART_MIDDLE || part == META_PART_BOTTOM;
             return (heracleumPart == META_PART_BOTTOM || heracleumPart == META_PART_SPROUT) &&

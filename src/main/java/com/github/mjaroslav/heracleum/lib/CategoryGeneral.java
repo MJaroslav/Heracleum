@@ -1,11 +1,28 @@
 package com.github.mjaroslav.heracleum.lib;
 
+import lombok.val;
 import mjaroslav.mcmods.mjutils.module.ConfigurationCategory;
 import mjaroslav.mcmods.mjutils.module.ConfigurationProperty;
 
 @ConfigurationCategory(modID = ModInfo.MOD_ID, name = ConfigurationCategory.GENERAL_NAME,
         comment = ConfigurationCategory.GENERAL_COMMENT)
 public class CategoryGeneral {
+    @ConfigurationCategory(name = "client", comment = "Cosmetic and clint side options.")
+    public static class CategoryClient {
+        @ConfigurationProperty(comment = "Color of dry heracleum plant blocks in '#HEX' or 'DECIMAL' format",
+                defaultString = "#B5B54A")
+        public static String dryHeracleumColor;
+
+        public static int parseDryHeracleumColor() {
+            try {
+                val hex = dryHeracleumColor.startsWith("#");
+                return Integer.parseInt(hex ? dryHeracleumColor.substring(1) : dryHeracleumColor, hex ? 16 : 10);
+            } catch (Exception ignored) {
+                return 0xB5B54A;
+            }
+        }
+    }
+
     @ConfigurationCategory(name = "plant_parameters", comment = "Block plant spread and growth parameters")
     public static class CategoryPlantParameters {
         @ConfigurationProperty(comment = "Enable heracleum spreading", defaultBoolean = true)
